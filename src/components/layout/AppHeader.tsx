@@ -88,9 +88,6 @@ export function AppHeader({
               >
                 {timeLabel}
               </span>
-              <span className="hidden lg:inline font-label-sm text-label-sm text-on-surface-variant">
-                Rem.
-              </span>
             </div>
           ) : null}
 

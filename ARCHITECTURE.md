@@ -102,7 +102,7 @@ stateDiagram-v2
 | `src/components/ui/`       | `Icon` (Material Symbols wrapper)                          |
 | `src/hooks/`               | Central store, countdown, local proctoring                 |
 | `src/lib/`                 | Storage, code tokenizer, rich text, utilities             |
-| `src/data/mockQuestions.ts`| 30 mock questions, duration, department options           |
+| `src/data/mockQuestions.ts`| 60 mock questions, duration, department options           |
 | `src/types/assessment.ts`  | Shared domain types                                       |
 
 ## Data model
@@ -126,10 +126,6 @@ interface AssessmentSession {
 interface Question {
   id: string;
   index: number;
-  category: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  marks: number;
-  negativeMarks: number;
   question: string;
   options: QuestionOption[];
   code?: CodeSnippet;

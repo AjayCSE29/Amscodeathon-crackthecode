@@ -12,7 +12,7 @@ confirmation. Built with React, TypeScript, Vite, and Tailwind CSS v4.
 
 - **Candidate entry** — validated form (name, institution, registration ID,
   department), conditions consent, and a frontend-only system/camera check.
-- **Timed assessment** — 30 mock MCQs across 6 categories with a 45-minute countdown.
+- **Timed assessment** — 60 mock MCQs across 6 categories with a 45-minute countdown.
 - **Question palette** — 5-column matrix with answered / marked / current / visited states.
 - **Answering tools** — select an option, clear a response, mark for review, and
   navigate freely between questions.
@@ -73,7 +73,7 @@ src/
     submission/            SubmissionConfirmation
     ui/                    Icon (Material Symbols wrapper)
   data/
-    mockQuestions.ts       30 mock MCQs + duration + department options
+    mockQuestions.ts       60 mock MCQs + duration + department options
   hooks/
     useAssessment.ts       Central session store and actions
     useAssessmentTimer.ts   Countdown, tiers, expiry
@@ -95,7 +95,7 @@ public/                    favicon.svg
 
 ## Mock data
 
-`src/data/mockQuestions.ts` provides 30 questions (5 each) across:
+`src/data/mockQuestions.ts` provides 60 questions (10 each) across:
 
 - Data Structures
 - Algorithms
@@ -104,7 +104,7 @@ public/                    favicon.svg
 - Database Systems
 - Operating Systems
 
-Five questions include code snippets rendered with a small built-in tokenizer.
+Ten questions include code snippets rendered with a small built-in tokenizer.
 Each question carries a `correctOptionId`, but it is **never rendered** — it is
 reserved for a future backend integration.
 

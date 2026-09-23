@@ -7,8 +7,6 @@ export interface Candidate {
   department: string;
 }
 
-export type Difficulty = "Easy" | "Medium" | "Hard";
-
 export type CodeTokenType =
   | "plain"
   | "comment"
@@ -45,10 +43,6 @@ export interface QuestionOption {
 export interface Question {
   id: string;
   index: number;
-  category: string;
-  difficulty: Difficulty;
-  marks: number;
-  negativeMarks: number;
   question: string;
   options: QuestionOption[];
   code?: CodeSnippet;

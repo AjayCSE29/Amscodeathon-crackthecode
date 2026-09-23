@@ -9,7 +9,6 @@ import { AssessmentLayout } from "../components/layout/AssessmentLayout";
 import { AppHeader } from "../components/layout/AppHeader";
 import { MOCK_QUESTIONS, ASSESSMENT_DURATION_MS } from "../data/mockQuestions";
 import { useAssessmentTimer } from "../hooks/useAssessmentTimer";
-import { useProctoring } from "../hooks/useProctoring";
 import { formatHMS } from "../lib/utils";
 import type { UseAssessmentApi } from "../hooks/useAssessment";
 
@@ -37,8 +36,6 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
 
   const [submitOpen, setSubmitOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-
-  const proctor = useProctoring(session?.status === "active");
 
   const handleExpire = useCallback(() => {
     finalizeExpired();
@@ -154,14 +151,6 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
         <h2 className="font-headline-md text-headline-md font-bold text-on-surface leading-tight">
           Competitive MCQ Challenge
         </h2>
-        <div className="flex items-center justify-between border-t border-outline-variant/40 pt-space-sm">
-          <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">
-            Session
-          </span>
-          <span className="font-label-sm text-label-sm font-semibold text-primary font-mono">
-            {session.sessionId}
-          </span>
-        </div>
       </div>
 
       <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
@@ -184,24 +173,6 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
             </span>
           </div>
         </div>
-      </div>
-
-      <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
-        <div className="flex items-center gap-2">
-          <Icon name="monitor_heart" className="text-primary text-[18px]" />
-          <div className="flex flex-col">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
-              Session Watch
-            </span>
-            <span className="font-body-md text-body-md text-on-surface">
-              Local focus log: {proctor.events.length} event{proctor.events.length === 1 ? "" : "s"}
-            </span>
-          </div>
-        </div>
-        <p className="font-label-sm text-label-sm text-on-surface-variant mt-1 leading-normal">
-          Tab focus &amp; visibility are tracked locally only. No monitoring is
-          transmitted to any server.
-        </p>
       </div>
     </>
   );
@@ -238,10 +209,6 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
               <QuestionMetadata
                 index={currentQuestion.index}
                 total={totalQuestions}
-                category={currentQuestion.category}
-                difficulty={currentQuestion.difficulty}
-                marks={currentQuestion.marks}
-                negativeMarks={currentQuestion.negativeMarks}
                 answered={answeredCurrent}
               />
               <QuestionCard
