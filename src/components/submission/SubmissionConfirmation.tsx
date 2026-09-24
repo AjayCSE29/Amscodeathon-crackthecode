@@ -5,11 +5,15 @@ import type { AssessmentSession } from "../../types/assessment";
 interface SubmissionConfirmationProps {
   session: AssessmentSession;
   totalQuestions: number;
+  stage: "round1" | "final";
+  onProceed?: () => void;
 }
 
 export function SubmissionConfirmation({
   session,
   totalQuestions,
+  stage,
+  onProceed,
 }: SubmissionConfirmationProps) {
   const answered = Object.values(session.responses).filter((v) => v != null).length;
   const submittedAt = session.submittedAt ?? session.expiresAt;
@@ -35,16 +39,24 @@ export function SubmissionConfirmation({
                   </div>
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary-fixed flex items-center justify-center shadow-sm">
-                  <Icon name="lock" className="text-primary text-sm font-bold" />
+                  {stage === "final" ? (
+                    <Icon name="lock" className="text-primary text-sm font-bold" />
+                  ) : (
+                    <Icon name="arrow_forward" className="text-primary text-sm font-bold" />
+                  )}
                 </div>
               </div>
 
               <div className="flex flex-col items-center text-center space-y-space-xs mb-space-lg">
                 <h1 className="font-headline-lg text-headline-lg text-on-surface">
-                  Assessment Submitted Successfully
+                  {stage === "round1"
+                    ? "Round 1 Submitted Successfully"
+                    : "Assessment Submitted Successfully"}
                 </h1>
                 <p className="font-body-md text-body-md text-on-surface-variant max-w-xs">
-                  Your responses have been recorded.
+                  {stage === "round1"
+                    ? "Your Round 1 responses have been recorded. Proceed to Round 2."
+                    : "Your responses have been recorded."}
                 </p>
               </div>
 
@@ -88,16 +100,16 @@ export function SubmissionConfirmation({
               </div>
 
               <div className="w-full flex flex-col space-y-space-sm">
-                <button
-                  type="button"
-                  disabled
-                  title="Next stage is not available in the frontend-only build"
-                  className="w-full h-10 text-on-primary font-label-md text-label-md rounded-lg shadow-sm flex items-center justify-center gap-space-xs opacity-50 cursor-not-allowed"
-                  style={{ backgroundColor: "#059669" }}
-                >
-                  <span>Proceed to next stage</span>
-                  <Icon name="arrow_forward" className="text-base" />
-                </button>
+                {onProceed ? (
+                  <button
+                    type="button"
+                    onClick={onProceed}
+                    className="w-full h-10 bg-tertiary hover:bg-primary text-on-tertiary font-label-md text-label-md rounded-lg shadow-sm flex items-center justify-center gap-space-xs transition-colors cursor-pointer"
+                  >
+                    <span>Start Round 2</span>
+                    <Icon name="arrow_forward" className="text-base" />
+                  </button>
+                ) : null}
               </div>
             </div>
           </div>

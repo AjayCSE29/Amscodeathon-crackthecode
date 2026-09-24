@@ -4,6 +4,7 @@ import { AssessmentLayout } from "./components/layout/AssessmentLayout";
 import { Icon } from "./components/ui/Icon";
 import { useAssessment } from "./hooks/useAssessment";
 import { AssessmentPage } from "./pages/AssessmentPage";
+import { DebugPage } from "./pages/DebugPage";
 import { EntryPage } from "./pages/EntryPage";
 import { SubmissionPage } from "./pages/SubmissionPage";
 
@@ -47,18 +48,44 @@ export default function App() {
     if (session?.status === "active" && Date.now() >= session.expiresAt) {
       finalizeExpired();
     }
-  }, [session?.status, session?.expiresAt, finalizeExpired]);
+    if (
+      session?.status === "round2" &&
+      session.round2ExpiresAt != null &&
+      Date.now() >= session.round2ExpiresAt
+    ) {
+      finalizeExpired();
+    }
+  }, [session?.status, session?.expiresAt, session?.round2ExpiresAt, finalizeExpired]);
 
   if (restoreProblem) return <RestoreError onReset={api.resetToEntry} />;
 
+  if (session?.status === "round1-submitted") {
+    return (
+      <SubmissionPage
+        session={session}
+        totalQuestions={api.totalQuestions}
+        stage="round1"
+        onProceed={api.proceedToRound2}
+      />
+    );
+  }
+
   if (session?.status === "submitted") {
     return (
-      <SubmissionPage session={session} totalQuestions={api.totalQuestions} />
+      <SubmissionPage
+        session={session}
+        totalQuestions={api.totalQuestions}
+        stage="final"
+      />
     );
   }
 
   if (session?.status === "active") {
     return <AssessmentPage api={api} />;
+  }
+
+  if (session?.status === "round2") {
+    return <DebugPage api={api} />;
   }
 
   return <EntryPage onContinue={api.startAssessment} />;

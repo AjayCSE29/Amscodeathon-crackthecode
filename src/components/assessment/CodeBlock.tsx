@@ -1,18 +1,8 @@
 import { useState } from "react";
-import { plainCode } from "../../lib/codeHighlight";
+import { plainCode, TOKEN_CLASS } from "../../lib/codeHighlight";
 import { cn } from "../../lib/utils";
-import type { CodeSnippet, CodeTokenType } from "../../types/assessment";
+import type { CodeSnippet } from "../../types/assessment";
 import { Icon } from "../ui/Icon";
-
-const TOKEN_CLASS: Record<CodeTokenType, string> = {
-  plain: "text-inverse-on-surface",
-  comment: "text-tertiary-fixed-dim",
-  keyword: "text-secondary-fixed",
-  type: "text-inverse-primary",
-  function: "text-tertiary-fixed",
-  number: "text-inverse-primary",
-  string: "text-primary-fixed",
-};
 
 interface CodeBlockProps {
   code: CodeSnippet;

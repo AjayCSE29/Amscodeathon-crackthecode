@@ -1,4 +1,29 @@
-export type AssessmentStatus = "entry" | "active" | "submitted";
+export type AssessmentStatus =
+  | "entry"
+  | "active"
+  | "round1-submitted"
+  | "round2"
+  | "submitted";
+
+export type DebugProgramLanguage = "C++" | "Python" | "Java";
+
+export type DebugDifficulty = "Easy" | "Medium" | "Hard";
+
+export interface DebugCase {
+  input: string;
+  output: string;
+}
+
+export interface DebugQuestion {
+  id: string;
+  index: number;
+  title: string;
+  difficulty: DebugDifficulty;
+  statement: string;
+  starters: Record<DebugProgramLanguage, string[]>;
+  sampleCases: DebugCase[];
+  bugHint?: string;
+}
 
 export interface Candidate {
   name: string;
@@ -61,6 +86,10 @@ export interface AssessmentSession {
   reviewFlags: Record<string, boolean>;
   visited: Record<string, boolean>;
   submittedAt: number | null;
+  round2ExpiresAt: number | null;
+  currentDebug: number;
+  codeEdits: Record<string, string>;
+  debugLanguage: DebugProgramLanguage;
 }
 
 export interface QuestionState {

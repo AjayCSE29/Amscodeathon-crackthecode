@@ -145,7 +145,7 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
             {counts.answered} / {totalQuestions} Done
           </span>
           <span className="font-label-sm text-label-sm bg-primary-fixed text-on-primary-fixed font-semibold px-2 py-0.5 rounded">
-            Round 02
+            Round 01
           </span>
         </div>
         <h2 className="font-headline-md text-headline-md font-bold text-on-surface leading-tight">
@@ -291,7 +291,7 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
         onContinue={() => setSubmitOpen(false)}
         onConfirm={() => {
           setSubmitOpen(false);
-          submitAssessment();
+          submitAssessment(1);
         }}
       />
 

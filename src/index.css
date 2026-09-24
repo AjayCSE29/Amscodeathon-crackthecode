@@ -44,6 +44,8 @@
   --color-on-surface-variant: #3f4850;
   --color-inverse-surface: #283044;
   --color-inverse-on-surface: #eef0ff;
+  --color-terminal: #0b1226;
+  --color-terminal-muted: #8792ad;
 
   /* Outlines & dividers */
   --color-outline: #707881;

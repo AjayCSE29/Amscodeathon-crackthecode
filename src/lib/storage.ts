@@ -4,6 +4,7 @@ const SESSION_KEY = "codeathon_session";
 const ANSWERS_KEY = "codeathon_answers";
 const FLAGS_KEY = "codeathon_flags";
 const VISITED_KEY = "codeathon_visited";
+const CODE_EDITS_KEY = "codeathon_code_edits";
 const PROCTOR_KEY = "codeathon_proctor_events";
 
 export interface StorageFailure {
@@ -48,7 +49,11 @@ export function isSessionLike(value: unknown): value is AssessmentSession {
     typeof s.startedAt === "number" &&
     typeof s.expiresAt === "number" &&
     typeof s.currentQuestion === "number" &&
-    (s.status === "entry" || s.status === "active" || s.status === "submitted") &&
+    (s.status === "entry" ||
+      s.status === "active" ||
+      s.status === "round1-submitted" ||
+      s.status === "round2" ||
+      s.status === "submitted") &&
     typeof s.candidate === "object" &&
     s.candidate !== null &&
     typeof s.responses === "object" &&
@@ -56,8 +61,33 @@ export function isSessionLike(value: unknown): value is AssessmentSession {
     typeof s.reviewFlags === "object" &&
     s.reviewFlags !== null &&
     typeof s.visited === "object" &&
-    s.visited !== null
+    s.visited !== null &&
+    (s.round2ExpiresAt === undefined ||
+      s.round2ExpiresAt === null ||
+      typeof s.round2ExpiresAt === "number") &&
+    (s.currentDebug === undefined || typeof s.currentDebug === "number") &&
+    (s.codeEdits === undefined ||
+      (typeof s.codeEdits === "object" && s.codeEdits !== null)) &&
+    (s.debugLanguage === undefined ||
+      s.debugLanguage === "C++" ||
+      s.debugLanguage === "Python" ||
+      s.debugLanguage === "Java")
   );
+}
+
+function withRound2Defaults(value: AssessmentSession): AssessmentSession {
+  const rawEdits = value.codeEdits ?? {};
+  const codeEdits: Record<string, string> = {};
+  for (const [key, text] of Object.entries(rawEdits)) {
+    codeEdits[key.includes(":") ? key : `${key}:C++`] = text;
+  }
+  return {
+    ...value,
+    round2ExpiresAt: value.round2ExpiresAt ?? null,
+    currentDebug: value.currentDebug ?? 1,
+    codeEdits,
+    debugLanguage: value.debugLanguage ?? "C++",
+  };
 }
 
 export type LoadResult<T> = { ok: true; data: T } | StorageFailure;
@@ -74,7 +104,7 @@ export const storage = {
     if (data === undefined || !isSessionLike(data)) {
       return { ok: false, reason: "corrupt" };
     }
-    return { ok: true, data };
+    return { ok: true, data: withRound2Defaults(data) };
   },
 
   saveSession(session: AssessmentSession): void {
@@ -93,11 +123,16 @@ export const storage = {
     writeRaw(VISITED_KEY, visited);
   },
 
+  saveCodeEdits(codeEdits: Record<string, string>): void {
+    writeRaw(CODE_EDITS_KEY, codeEdits);
+  },
+
   clearSession(): void {
     removeRaw(SESSION_KEY);
     removeRaw(ANSWERS_KEY);
     removeRaw(FLAGS_KEY);
     removeRaw(VISITED_KEY);
+    removeRaw(CODE_EDITS_KEY);
     removeRaw(PROCTOR_KEY);
   },
 

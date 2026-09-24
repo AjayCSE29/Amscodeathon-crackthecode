@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { cn } from "../../lib/utils";
 import type { TimerTier } from "../../types/assessment";
 import { Icon } from "../ui/Icon";
@@ -10,6 +11,7 @@ interface AppHeaderProps {
   timeLabel?: string;
   timerTier?: TimerTier;
   statusLabel?: string;
+  actions?: ReactNode;
 }
 
 export function AppHeader({
@@ -18,6 +20,7 @@ export function AppHeader({
   timeLabel,
   timerTier = "normal",
   statusLabel,
+  actions,
 }: AppHeaderProps) {
   const active = mode === "active";
   return (
@@ -42,6 +45,10 @@ export function AppHeader({
         </div>
 
         <div className="flex items-center gap-space-md shrink-0">
+          {actions ? (
+            <div className="hidden md:flex items-center">{actions}</div>
+          ) : null}
+
           <div className="hidden md:flex flex-col items-end text-right">
             <span className="font-body-md text-body-md font-semibold text-on-surface leading-tight">
               {candidateName || "Candidate"}

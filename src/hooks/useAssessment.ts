@@ -4,11 +4,19 @@ import {
   MOCK_QUESTIONS,
   TOTAL_QUESTIONS,
 } from "../data/mockQuestions";
+import {
+  DEBUG_QUESTIONS,
+  ROUND2_DURATION_MS,
+  TOTAL_DEBUG_QUESTIONS,
+} from "../data/debugQuestions";
+import { plainCode } from "../lib/codeHighlight";
 import { storage } from "../lib/storage";
 import { sessionIdFromSeed } from "../lib/utils";
 import type {
   AssessmentSession,
   Candidate,
+  DebugProgramLanguage,
+  DebugQuestion,
   OptionId,
   Question,
   QuestionState,
@@ -24,8 +32,10 @@ export interface AssessmentCounts {
 export interface UseAssessmentApi {
   session: AssessmentSession | null;
   currentQuestion: Question | null;
+  currentDebugQuestion: DebugQuestion | null;
   totalQuestions: number;
   counts: AssessmentCounts;
+  debugCounts: { edited: number; total: number };
   stateFor: (question: Question) => QuestionState;
   restoreProblem: boolean;
   startAssessment: (candidate: Candidate) => void;
@@ -36,7 +46,12 @@ export interface UseAssessmentApi {
   clearResponse: (questionId: string) => void;
   toggleReview: (questionId: string) => void;
   ensureVisited: (questionId: string) => void;
-  submitAssessment: () => void;
+  proceedToRound2: () => void;
+  setCode: (questionId: string, code: string) => void;
+  resetCode: (questionId: string) => void;
+  setDebugLanguage: (language: DebugProgramLanguage) => void;
+  navigateDebug: (index: number) => void;
+  submitAssessment: (round: 1 | 2) => void;
   finalizeExpired: () => void;
   resetToEntry: () => void;
 }
@@ -54,6 +69,10 @@ function buildSession(candidate: Candidate): AssessmentSession {
     reviewFlags: {},
     visited: {},
     submittedAt: null,
+    round2ExpiresAt: null,
+    currentDebug: 1,
+    codeEdits: {},
+    debugLanguage: "C++",
   };
 }
 
@@ -62,6 +81,17 @@ function commit(session: AssessmentSession): void {
   storage.saveAnswers(session.responses);
   storage.saveFlags(session.reviewFlags);
   storage.saveVisited(session.visited);
+  storage.saveCodeEdits(session.codeEdits);
+}
+
+function applyRound2(prev: AssessmentSession): AssessmentSession {
+  return {
+    ...prev,
+    status: "round2",
+    round2ExpiresAt: Date.now() + ROUND2_DURATION_MS,
+    currentDebug: Math.min(1, TOTAL_DEBUG_QUESTIONS),
+    codeEdits: { ...prev.codeEdits },
+  };
 }
 
 function getCounts(session: AssessmentSession | null, total: number): AssessmentCounts {
@@ -216,9 +246,31 @@ export function useAssessment(): UseAssessmentApi {
     });
   }, []);
 
-  const submitAssessment = useCallback(() => {
+  const proceedToRound2 = useCallback(() => {
     setSession((prev) => {
-      if (!prev) return prev;
+      if (!prev || prev.status !== "round1-submitted") return prev;
+      const next = applyRound2(prev);
+      commit(next);
+      return next;
+    });
+  }, []);
+
+  const submitAssessment = useCallback((round: 1 | 2) => {
+    if (round === 1) {
+      setSession((prev) => {
+        if (!prev || prev.status !== "active") return prev;
+        const next = {
+          ...prev,
+          status: "round1-submitted" as const,
+          submittedAt: Date.now(),
+        };
+        commit(next);
+        return next;
+      });
+      return;
+    }
+    setSession((prev) => {
+      if (!prev || prev.status !== "round2") return prev;
       const next = {
         ...prev,
         status: "submitted" as const,
@@ -229,16 +281,79 @@ export function useAssessment(): UseAssessmentApi {
     });
   }, []);
 
-  const finalizeExpired = useCallback(() => {
+  const setCode = useCallback((questionId: string, code: string) => {
     setSession((prev) => {
-      if (!prev || prev.status !== "active") return prev;
+      if (!prev || prev.status !== "round2") return prev;
+      const key = `${questionId}:${prev.debugLanguage}`;
       const next = {
         ...prev,
-        status: "submitted" as const,
-        submittedAt: prev.expiresAt,
+        codeEdits: { ...prev.codeEdits, [key]: code },
       };
       commit(next);
       return next;
+    });
+  }, []);
+
+  const resetCode = useCallback((questionId: string) => {
+    setSession((prev) => {
+      if (!prev || prev.status !== "round2") return prev;
+      const target = DEBUG_QUESTIONS.find((q) => q.id === questionId);
+      if (!target) return prev;
+      const key = `${questionId}:${prev.debugLanguage}`;
+      const next = {
+        ...prev,
+        codeEdits: {
+          ...prev.codeEdits,
+          [key]: plainCode(target.starters[prev.debugLanguage]),
+        },
+      };
+      commit(next);
+      return next;
+    });
+  }, []);
+
+  const setDebugLanguage = useCallback(
+    (language: DebugProgramLanguage) => {
+      setSession((prev) => {
+        if (!prev || prev.status !== "round2" || prev.debugLanguage === language) {
+          return prev;
+        }
+        const next = { ...prev, debugLanguage: language };
+        commit(next);
+        return next;
+      });
+    },
+    [],
+  );
+
+  const navigateDebug = useCallback((index: number) => {
+    setSession((prev) => {
+      if (!prev || prev.status !== "round2") return prev;
+      const idx = Math.min(TOTAL_DEBUG_QUESTIONS, Math.max(1, index));
+      const next = { ...prev, currentDebug: idx };
+      commit(next);
+      return next;
+    });
+  }, []);
+
+  const finalizeExpired = useCallback(() => {
+    setSession((prev) => {
+      if (!prev) return prev;
+      if (prev.status === "active") {
+        const next = applyRound2(prev);
+        commit(next);
+        return next;
+      }
+      if (prev.status === "round2") {
+        const next = {
+          ...prev,
+          status: "submitted" as const,
+          submittedAt: prev.round2ExpiresAt ?? Date.now(),
+        };
+        commit(next);
+        return next;
+      }
+      return prev;
     });
   }, []);
 
@@ -251,6 +366,21 @@ export function useAssessment(): UseAssessmentApi {
   const currentQuestion: Question | null = session
     ? MOCK_QUESTIONS[session.currentQuestion - 1] ?? null
     : null;
+
+  const currentDebugQuestion: DebugQuestion | null =
+    session && session.status === "round2"
+      ? DEBUG_QUESTIONS[session.currentDebug - 1] ?? null
+      : null;
+
+  const debugCounts = {
+    edited:
+      session?.status === "round2"
+        ? new Set(
+            Object.keys(session.codeEdits).map((key) => key.split(":")[0]),
+          ).size
+        : 0,
+    total: TOTAL_DEBUG_QUESTIONS,
+  };
 
   const stateFor = useCallback(
     (q: Question): QuestionState => {
@@ -271,8 +401,10 @@ export function useAssessment(): UseAssessmentApi {
   return {
     session,
     currentQuestion,
+    currentDebugQuestion,
     totalQuestions: TOTAL_QUESTIONS,
     counts,
+    debugCounts,
     stateFor,
     restoreProblem,
     startAssessment,
@@ -283,6 +415,11 @@ export function useAssessment(): UseAssessmentApi {
     clearResponse,
     toggleReview,
     ensureVisited,
+    proceedToRound2,
+    setCode,
+    resetCode,
+    setDebugLanguage,
+    navigateDebug,
     submitAssessment,
     finalizeExpired,
     resetToEntry,
