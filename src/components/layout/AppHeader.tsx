@@ -2,8 +2,7 @@ import { cn } from "../../lib/utils";
 import type { TimerTier } from "../../types/assessment";
 import { Icon } from "../ui/Icon";
 
-export const CODEATHON_LOGO_SRC =
-  "https://lh3.googleusercontent.com/aida/AEtjO1VT_hbN8PiZcyZ4gsBVDRiUu-9LN4zyIE6sVcYQ59vaFXcLTZxpLH196lsgNfA1DnOA-qQq_2HcP80tqBAuwLlm14ji1WfFgBP7wpqDLc2yFRBTiznJnnhw7URKFe5bAPNjK89K0c6jVTFaBlc83rydLG79Enh6c3UB5P0kV5-3FQIuIPF3W_7EQDOYnk2LlDAG6T6u8VQevhiqDXLebk8g4xn2IFPMisNWKyMYIvcO";
+export const CODEATHON_LOGO_SRC = "/codeathon-logo.png";
 
 interface AppHeaderProps {
   mode: "entry" | "active";

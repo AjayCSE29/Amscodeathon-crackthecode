@@ -227,7 +227,7 @@ export function CandidateForm({
             ))}
           </select>
           <span className="material-symbols-outlined absolute right-3 text-on-surface-variant text-lg pointer-events-none">
-            expand_more
+            arrow_drop_down
           </span>
         </div>
       </div>
