@@ -1,155 +1,320 @@
 import type { CodeSnippet, Question } from "../types/assessment";
 import { buildCodeLines } from "../lib/codeHighlight";
 
-const bstSearchCode: CodeSnippet = {
-  fileName: "bst_search.cpp",
+const swapSnippet: CodeSnippet = {
+  fileName: "swap.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "x = 5",
+    "y = 2",
+    "x = x + y",
+    "y = x - y",
+    "x = x - y",
+    "print(x, y)",
+  ]),
+};
+
+const doublingSnippet: CodeSnippet = {
+  fileName: "for_loop.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "x = 1",
+    "for i = 1 to 4:",
+    "    x = x * 2",
+    "print(x)",
+  ]),
+};
+
+const branchesSnippet: CodeSnippet = {
+  fileName: "condition.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "a = 10",
+    "b = 20",
+    "c = 15",
+    "if a > b:",
+    "    print(a)",
+    "elif b > c:",
+    "    print(b)",
+    "else:",
+    "    print(c)",
+  ]),
+};
+
+const nestedCountSnippet: CodeSnippet = {
+  fileName: "nested_loops.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "count = 0",
+    "for i = 1 to 3:",
+    "    for j = 1 to 2:",
+    "        count = count + 1",
+  ]),
+};
+
+const whileSnippet: CodeSnippet = {
+  fileName: "while_loop.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "x = 15",
+    "while x > 5:",
+    "    x = x - 3",
+    "print(x)",
+  ]),
+};
+
+const averageSnippet: CodeSnippet = {
+  fileName: "sum_array.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "arr = [2, 4, 6, 8]",
+    "sum = 0",
+    "for i = 0 to 3:",
+    "    sum = sum + arr[i]",
+    "print(sum / 4)",
+  ]),
+};
+
+const changeFunctionSnippet: CodeSnippet = {
+  fileName: "function.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "x = 2",
+    "function change(x):",
+    "    x = x + 5",
+    "    return x",
+    "x = change(x)",
+    "x = change(x)",
+    "print(x)",
+  ]),
+};
+
+const countAboveSnippet: CodeSnippet = {
+  fileName: "count_array.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "arr = [1, 2, 3, 4, 5]",
+    "count = 0",
+    "for i = 0 to 4:",
+    "    if arr[i] > 2:",
+    "        count = count + 1",
+    "print(count)",
+  ]),
+};
+
+const breakSnippet: CodeSnippet = {
+  fileName: "break_loop.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "x = 0",
+    "for i = 1 to 5:",
+    "    if i == 3:",
+    "        break",
+    "    x = x + i",
+    "print(x)",
+  ]),
+};
+
+const swapArraySnippet: CodeSnippet = {
+  fileName: "swap_array.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "arr = [5, 10, 15, 20]",
+    "temp = arr[0]",
+    "arr[0] = arr[3]",
+    "arr[3] = temp",
+    "print(arr[0], arr[3])",
+  ]),
+};
+
+const charCountSnippet: CodeSnippet = {
+  fileName: "count_chars.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "str = \"HELLO\"",
+    "count = 0",
+    "for each character in str:",
+    "    if character == 'L':",
+    "        count = count + 1",
+    "print(count)",
+  ]),
+};
+
+const halvingSnippet: CodeSnippet = {
+  fileName: "halving.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "x = 20",
+    "for i = 1 to 4:",
+    "    if x % 2 == 0:",
+    "        x = x / 2",
+    "    else:",
+    "        x = x + 1",
+    "print(x)",
+  ]),
+};
+
+const primeSnippet: CodeSnippet = {
+  fileName: "prime.txt",
+  language: "Pseudocode",
+  lines: buildCodeLines([
+    "n = 17",
+    "count = 0",
+    "for i = 1 to n:",
+    "    if n % i == 0:",
+    "        count = count + 1",
+    "if count == 2:",
+    "    print(\"Prime\")",
+    "else:",
+    "    print(\"Not Prime\")",
+  ]),
+};
+
+const recursionSnippet: CodeSnippet = {
+  fileName: "recursion.cpp",
   language: "C++17",
   lines: buildCodeLines([
-  "// Search implementation in balanced vs skewed BST",
-  "Node* search(Node* root, int key) {",
-  "    if (root == nullptr || root->key == key)",
-  "        return root;",
-  "    if (key < root->key)",
-  "        return search(root->left, key);",
-  "    return search(root->right, key);",
-  "}",
+    "int fun(int n) {",
+    "    if (n <= 1)",
+    "        return 1;",
+    "    return n * fun(n - 2);",
+    "}",
+    "cout << fun(6);",
   ]),
 };
 
-const minHeapCode: CodeSnippet = {
-  fileName: "min_heap.cpp",
+const nestedRecursionSnippet: CodeSnippet = {
+  fileName: "nested_recursion.cpp",
   language: "C++17",
   lines: buildCodeLines([
-  "// Percolate down in a binary min-heap",
-  "void heapifyDown(int arr[], int n, int i) {",
-  "    int smallest = i;",
-  "    int left = 2 * i + 1, right = 2 * i + 2;",
-  "    if (left < n && arr[left] < arr[smallest])",
-  "        smallest = left;",
-  "    if (right < n && arr[right] < arr[smallest])",
-  "        smallest = right;",
-  "    if (smallest != i) {",
-  "        swap(arr[i], arr[smallest]);",
-  "        heapifyDown(arr, n, smallest);",
-  "    }",
-  "}",
+    "int fun(int n) {",
+    "    if (n <= 1)",
+    "        return n;",
+    "    return fun(n - 1) + fun(n - 2);",
+    "}",
+    "cout << fun(6);",
   ]),
 };
 
-const recursionCode: CodeSnippet = {
-  fileName: "mystery.cpp",
+const arraySnippet: CodeSnippet = {
+  fileName: "array_manipulation.cpp",
   language: "C++17",
   lines: buildCodeLines([
-  "int mystery(int n) {",
-  "    if (n <= 1) return 1;",
-  "    return mystery(n - 1) + mystery(n - 2);",
-  "}",
+    "int arr[] = {2, 4, 6, 8, 10};",
+    "for(int i = 0; i < 5; i++) {",
+    "    arr[i] = arr[i] + i;",
+    "}",
+    "for(int i = 4; i >= 0; i -= 2) {",
+    "    cout << arr[i] << \" \";",
+    "}",
   ]),
 };
 
-const fibCode: CodeSnippet = {
-  fileName: "fibonacci.js",
-  language: "JavaScript",
-  lines: buildCodeLines([
-  "function fib(n) {",
-  "  if (n <= 1) return n;",
-  "  let a = 0, b = 1;",
-  "  for (let i = 2; i <= n; i++) {",
-  "    const c = a + b;",
-  "    a = b;",
-  "    b = c;",
-  "  }",
-  "  return b;",
-  "}",
-  ]),
-};
-
-const lruCode: CodeSnippet = {
-  fileName: "lru_cache.cpp",
+const pointerSnippet: CodeSnippet = {
+  fileName: "pointers.cpp",
   language: "C++17",
   lines: buildCodeLines([
-  "void referencePage(int page) {",
-  "    if (cache.find(page)) {",
-  "        erase(page); // update recency",
-  "        pushFront(page);",
-  "        return;",
-  "    }",
-  "    if (cache.size() == capacity)",
-  "        popBack(); // evict LRU",
-  "    pushFront(page);",
-  "}",
+    "int a = 10;",
+    "int b = 20;",
+    "int *p = &a;",
+    "int *q = &b;",
+    "*p = *p + *q;",
+    "*q = *p - *q;",
+    "*p = *p - *q;",
+    "cout << a << \" \" << b;",
   ]),
 };
 
-const bstInsertCode: CodeSnippet = {
-  fileName: "bst_insert.cpp",
+const referenceSnippet: CodeSnippet = {
+  fileName: "references.cpp",
   language: "C++17",
   lines: buildCodeLines([
-  "// Insert a key into a Binary Search Tree",
-  "Node* insert(Node* root, int key) {",
-  "    if (root == nullptr)",
-  "        return new Node(key);",
-  "    if (key < root->key)",
-  "        root->left = insert(root->left, key);",
-  "    else if (key > root->key)",
-  "        root->right = insert(root->right, key);",
-  "    return root;",
-  "}",
+    "void modify(int &a, int &b) {",
+    "    a = a + b;",
+    "    b = a - b;",
+    "    a = a - b;",
+    "}",
+    "int x = 15;",
+    "int y = 25;",
+    "modify(x, y);",
+    "cout << x << \" \" << y;",
   ]),
 };
 
-const binarySearchCode: CodeSnippet = {
-  fileName: "binary_search.cpp",
+const loopSnippet: CodeSnippet = {
+  fileName: "loop_analysis.cpp",
   language: "C++17",
   lines: buildCodeLines([
-  "int binarySearch(int arr[], int n, int key) {",
-  "    int lo = 0, hi = n - 1;",
-  "    while (lo <= hi) {",
-  "        int mid = lo + (hi - lo) / 2;",
-  "        if (arr[mid] == key) return mid;",
-  "        if (arr[mid] < key) lo = mid + 1;",
-  "        else hi = mid - 1;",
-  "    }",
-  "    return -1;",
-  "}",
+    "for(int i = 1; i <= n; i *= 2) {",
+    "    for(int j = 1; j <= i; j++) {",
+    "        cout << \"*\";",
+    "    }",
+    "}",
   ]),
 };
 
-const reduceCode: CodeSnippet = {
-  fileName: "sum.js",
-  language: "JavaScript",
+const complexLoopSnippet: CodeSnippet = {
+  fileName: "complex_loop.cpp",
+  language: "C++17",
   lines: buildCodeLines([
-  "const nums = [1, 2, 3, 4];",
-  "const total = nums.reduce((acc, value) => acc + value, 0);",
-  "console.log(total);",
+    "for(int i = n; i > 0; i /= 2) {",
+    "    for(int j = 0; j < i; j++) {",
+    "        cout << \"*\";",
+    "    }",
+    "}",
   ]),
 };
 
-const invoiceSqlCode: CodeSnippet = {
-  fileName: "invoice.sql",
-  language: "SQL",
+const tripleLoopSnippet: CodeSnippet = {
+  fileName: "nested_complexity.cpp",
+  language: "C++17",
   lines: buildCodeLines([
-  "SELECT c.name, SUM(o.total) AS spent",
-  "FROM customers c",
-  "JOIN orders o ON o.customer_id = c.id",
-  "WHERE c.region = 'East'",
-  "GROUP BY c.name;",
+    "for(int i = 1; i <= n; i *= 2) {",
+    "    for(int j = 0; j < n; j++) {",
+    "        for(int k = 1; k <= n; k *= 2) {",
+    "            cout << \"*\";",
+    "        }",
+    "    }",
+    "}",
   ]),
 };
 
-const semaphoreCode: CodeSnippet = {
-  fileName: "producer_consumer.c",
-  language: "C",
+const stackRecursionSnippet: CodeSnippet = {
+  fileName: "stack_recursion.cpp",
+  language: "C++17",
   lines: buildCodeLines([
-  "// Producer with a counting semaphore",
-  "while (true) {",
-  "    item = produce();",
-  "    wait(empty);   // request a slot",
-  "    wait(mutex);   // enter critical section",
-  "    buffer[in] = item;",
-  "    signal(mutex);",
-  "    signal(full);",
-  "}",
+    "void fun(int n) {",
+    "    if(n == 0)",
+    "        return;",
+    "    cout << n << \" \";",
+    "    fun(n - 1);",
+    "    cout << n << \" \";",
+    "}",
+    "fun(3);",
+  ]),
+};
+
+const halfRecursionSnippet: CodeSnippet = {
+  fileName: "half_recursion.cpp",
+  language: "C++17",
+  lines: buildCodeLines([
+    "int fun(int n) {",
+    "    if(n <= 1)",
+    "        return 1;",
+    "    return fun(n / 2) + fun(n / 2);",
+    "}",
+  ]),
+};
+
+const doublingInnerSnippet: CodeSnippet = {
+  fileName: "nested_timing.cpp",
+  language: "C++17",
+  lines: buildCodeLines([
+    "for(int i = 1; i <= n; i *= 2) {",
+    "    for(int j = 0; j < n; j++) {",
+    "        cout << \"*\";",
+    "    }",
+    "}",
   ]),
 };
 
@@ -157,629 +322,318 @@ export const MOCK_QUESTIONS: Question[] = [
   {
     id: "Q-001",
     index: 1,
-    question:
-      "What is the average-case and balanced-worst-case time complexity of searching for an element in a balanced Binary Search Tree (BST), and what specific condition triggers the worst-case time complexity in an unbalanced BST implementation?",
-    code: bstSearchCode,
+    question: "What is the decimal equivalent of the binary number `101101`₂?",
     options: [
-      {
-        id: "A",
-        text: "`O(log n)` for both balanced and worst-case unbalanced BST when traversal reaches terminal leaf states.",
-      },
-      {
-        id: "B",
-        text: "`O(log n)` average and balanced worst-case; `O(n)` when the tree is strictly degenerated into a skewed linked-list structure.",
-      },
-      {
-        id: "C",
-        text: "`O(1)` average using hash buckets; `O(log n)` worst case when bucket collisions cascade.",
-      },
-      {
-        id: "D",
-        text: "`O(n log n)` due to call-stack overhead on every recursive branch traversal regardless of tree height.",
-      },
+      { id: "A", text: "41" },
+      { id: "B", text: "43" },
+      { id: "C", text: "45" },
+      { id: "D", text: "47" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "C",
   },
   {
     id: "Q-002",
     index: 2,
     question:
-      "Consider inserting a node at the \u201Cbeginning\u201D of a singly linked list that also maintains a known head pointer. What is the time complexity of this operation, and why is it not constant for a dynamic array?",
+      "A processor executes 2 billion instructions per second. Approximately how many instructions can it execute in 5 seconds?",
     options: [
-      {
-        id: "A",
-        text: "`O(1)` for the linked list; a dynamic array requires shifting all elements to `O(n)`.",
-      },
-      {
-        id: "B",
-        text: "`O(n)` for the linked list because the list must be traversed to update the tail link.",
-      },
-      {
-        id: "C",
-        text: "`O(log n)` for both structures because node addresses must be rehashed.",
-      },
-      {
-        id: "D",
-        text: "`O(1)` for the linked list only if the tail pointer is also maintained.",
-      },
+      { id: "A", text: "2 billion" },
+      { id: "B", text: "5 billion" },
+      { id: "C", text: "10 billion" },
+      { id: "D", text: "20 billion" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-003",
     index: 3,
-    question:
-      "Which data structure is the natural fit for evaluating a postfix expression `23*5+` and why?",
+    question: "Which device is primarily used to connect different networks?",
     options: [
-      {
-        id: "A",
-        text: "A queue, because operands are dequeued in the exact order they were written.",
-      },
-      {
-        id: "B",
-        text: "A stack, because the most recently pushed operand is matched with each operator in LIFO order.",
-      },
-      {
-        id: "C",
-        text: "A binary heap, because operators always compare against the global minimum.",
-      },
-      {
-        id: "D",
-        text: "A linked list, because each node stores one character of the expression.",
-      },
+      { id: "A", text: "Hub" },
+      { id: "B", text: "Switch" },
+      { id: "C", text: "Router" },
+      { id: "D", text: "Repeater" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "C",
   },
   {
     id: "Q-004",
     index: 4,
-    question:
-      "A hash table uses separate chaining with a load factor that grows unbounded. Which statement about lookup behavior is correct?",
+    question: "Which of the following is a valid IPv4 address?",
     options: [
-      {
-        id: "A",
-        text: "Lookup degrades toward `O(n)` in the chain length even when the hash function is uniform.",
-      },
-      {
-        id: "B",
-        text: "Lookup remains `O(1)` regardless of load factor because chaining never permits collisions.",
-      },
-      {
-        id: "C",
-        text: "Lookup is `O(log n)` because every chain is internally maintained as a balanced tree.",
-      },
-      {
-        id: "D",
-        text: "Lookup fails once the first collision occurs and the table must be rebuilt.",
-      },
+      { id: "A", text: "`192.168.1.256`" },
+      { id: "B", text: "`192.168.1.10`" },
+      { id: "C", text: "`300.10.2.1`" },
+      { id: "D", text: "`192.168.500.2`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-005",
     index: 5,
-    question:
-      "In the min-heap shown, is the underlying array always a valid representation of a binary heap? Which invariant must hold at every index `i`?",
-    code: minHeapCode,
+    question: "Which key uniquely identifies a record in a database table?",
     options: [
-      {
-        id: "A",
-        text: "`arr[i] <= arr[2i+1]` and `arr[i] <= arr[2i+2]` for all valid children.",
-      },
-      {
-        id: "B",
-        text: "`arr[i] >= arr[2i+1]` and `arr[i] >= arr[2i+2]` for all valid children.",
-      },
-      {
-        id: "C",
-        text: "`arr[i]` is always strictly less than every element to its right.",
-      },
-      {
-        id: "D",
-        text: "`arr[0]` is the median of the entire collection at all times.",
-      },
+      { id: "A", text: "Foreign Key" },
+      { id: "B", text: "Primary Key" },
+      { id: "C", text: "Candidate Value" },
+      { id: "D", text: "Composite Value" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-006",
     index: 6,
     question:
-      "Merge sort always divides the input into two halves and merges them. What are its best, average, and worst-case time complexities?",
+      "If an algorithm takes 10 seconds to process 1,000 elements and its running time is approximately proportional to the number of elements, how long would it take for 3,000 elements?",
     options: [
-      {
-        id: "A",
-        text: "`O(n log n)` for all three cases because the divide-and-merge structure is independent of input order.",
-      },
-      {
-        id: "B",
-        text: "`O(n)` best, `O(n log n)` average, `O(n^2)` worst.",
-      },
-      {
-        id: "C",
-        text: "`O(log n)` for all three cases due to halving.",
-      },
-      {
-        id: "D",
-        text: "`O(n^2)` for all three cases because merging always compares every element with every other.",
-      },
+      { id: "A", text: "15 seconds" },
+      { id: "B", text: "20 seconds" },
+      { id: "C", text: "30 seconds" },
+      { id: "D", text: "40 seconds" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-007",
     index: 7,
-    question:
-      "Dijkstra\u2019s algorithm computes shortest paths on a graph. Which of the following is required for a correct result?",
+    question: "What is the result of `1 OR 0`?",
     options: [
-      {
-        id: "A",
-        text: "All edge weights must be non-negative for the greedy relaxation to be correct.",
-      },
-      {
-        id: "B",
-        text: "The graph must be a tree with at most one path between any two vertices.",
-      },
-      {
-        id: "C",
-        text: "The graph must be a DAG so that topological order can be used.",
-      },
-      {
-        id: "D",
-        text: "An adjacency matrix must be used; adjacency lists break the algorithm.",
-      },
+      { id: "A", text: "`0`" },
+      { id: "B", text: "`1`" },
+      { id: "C", text: "`10`" },
+      { id: "D", text: "`Undefined`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-008",
     index: 8,
-    question:
-      "You must search for a target in a rotated sorted array `[5,6,7,1,2,3,4]`. Binary search on this array — which observation makes it correct in `O(log n)`?",
+    question: "Which memory is generally faster?",
     options: [
-      {
-        id: "A",
-        text: "At least one half of the array is always sorted, so the decision to drop a half is well-defined.",
-      },
-      {
-        id: "B",
-        text: "The pivot is always at `n/2`, so a single comparison finds the element.",
-      },
-      {
-        id: "C",
-        text: "The array must first be fully sorted with a quick sort to apply binary search.",
-      },
-      {
-        id: "D",
-        text: "Binary search fails in `O(log n)`; a linear scan is always required.",
-      },
+      { id: "A", text: "HDD" },
+      { id: "B", text: "RAM" },
+      { id: "C", text: "Cache" },
+      { id: "D", text: "Secondary storage" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-009",
     index: 9,
     question:
-      "The function below computes the nth Fibonacci number. What is the asymptotic running time of this recursive formulation?",
-    code: recursionCode,
+      "A process contains 4 threads. If each thread performs an independent task, how many tasks can potentially execute concurrently?",
     options: [
-      {
-        id: "A",
-        text: "`O(2^n)` — each call branches into two sub-calls, recomputing overlapping subproblems.",
-      },
-      {
-        id: "B",
-        text: "`O(n)` — the function always runs a single loop.",
-      },
-      {
-        id: "C",
-        text: "`O(log n)` — the recursion halves the input each step.",
-      },
-      {
-        id: "D",
-        text: "`O(n^2)` — each addition takes quadratic time.",
-      },
+      { id: "A", text: "1" },
+      { id: "B", text: "2" },
+      { id: "C", text: "4" },
+      { id: "D", text: "8" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-010",
     index: 10,
     question:
-      "Quick sort with a fixed pivot (e.g., always the last element) is called on an already-sorted array. What is the resulting time complexity and why?",
+      "A computer's storage capacity increases from 500 GB to 750 GB. What is the percentage increase?",
     options: [
-      {
-        id: "A",
-        text: "`O(n^2)` — the pivot is the extreme element and every partition is maximally unbalanced.",
-      },
-      {
-        id: "B",
-        text: "`O(n log n)` — sorted input is the best case for quick sort by definition.",
-      },
-      {
-        id: "C",
-        text: "`O(log n)` — the recursion depth is always logarithmic.",
-      },
-      {
-        id: "D",
-        text: "`O(n)` — one pass over the array completes the sort.",
-      },
+      { id: "A", text: "25%" },
+      { id: "B", text: "40%" },
+      { id: "C", text: "50%" },
+      { id: "D", text: "75%" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-011",
     index: 11,
     question:
-      "What does `int a[5] = {1,2,3};` produce with respect to the remaining elements `a[3]` and `a[4]`?",
+      "A network connection transfers 100 MB of data in 5 seconds. What is the average transfer rate?",
     options: [
-      {
-        id: "A",
-        text: "They are zero-initialized to `0`.",
-      },
-      {
-        id: "B",
-        text: "They contain indeterminate garbage values.",
-      },
-      {
-        id: "C",
-        text: "The program fails to compile because the initializer is incomplete.",
-      },
-      {
-        id: "D",
-        text: "`a[3]` equals `3` and `a[4]` is uninitialized memory.",
-      },
+      { id: "A", text: "10 MB/s" },
+      { id: "B", text: "15 MB/s" },
+      { id: "C", text: "20 MB/s" },
+      { id: "D", text: "25 MB/s" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-012",
     index: 12,
-    question:
-      "Which statement about `virtual` functions in C++ is correct?",
+    question: "A binary tree node can have a maximum of how many children?",
     options: [
-      {
-        id: "A",
-        text: "They enable runtime polymorphism — the override is resolved from the dynamic type of the object.",
-      },
-      {
-        id: "B",
-        text: "They are resolved entirely at compile time like templates.",
-      },
-      {
-        id: "C",
-        text: "Only the base class version can ever be called, even on derived objects.",
-      },
-      {
-        id: "D",
-        text: "They can only be declared in abstract interfaces, never in concrete classes.",
-      },
+      { id: "A", text: "1" },
+      { id: "B", text: "2" },
+      { id: "C", text: "3" },
+      { id: "D", text: "4" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-013",
     index: 13,
     question:
-      "Evaluate the statement `long x = (1u << 31);` on a typical 32-bit `unsigned int`. What is the outcome?",
+      "A computer system has a 90% chance of working correctly. What is the probability that it fails?",
     options: [
-      {
-        id: "A",
-        text: "`x` becomes `2147483648` (`2^31`) without overflow because the shift is performed in unsigned arithmetic.",
-      },
-      {
-        id: "B",
-        text: "The shift overflows the 32-bit `unsigned int` and triggers undefined behavior.",
-      },
-      {
-        id: "C",
-        text: "`x` becomes negative because the sign bit is set.",
-      },
-      {
-        id: "D",
-        text: "The expression fails to compile.",
-      },
+      { id: "A", text: "5%" },
+      { id: "B", text: "10%" },
+      { id: "C", text: "20%" },
+      { id: "D", text: "90%" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-014",
     index: 14,
     question:
-      "In Python, which collection type is unordered, unindexed, and stores only unique elements?",
+      "Which protocol is commonly used to securely access a remote computer through a command-line interface?",
     options: [
-      {
-        id: "A",
-        text: "`set`",
-      },
-      {
-        id: "B",
-        text: "`list`",
-      },
-      {
-        id: "C",
-        text: "`tuple`",
-      },
-      {
-        id: "D",
-        text: "`dict` as a whole (its insertion order is preserved, but keys may repeat).",
-      },
+      { id: "A", text: "FTP" },
+      { id: "B", text: "HTTP" },
+      { id: "C", text: "SSH" },
+      { id: "D", text: "SMTP" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-015",
     index: 15,
     question:
-      "The iterative Fibonacci function below runs in linear time with constant extra space. What is its space complexity?",
-    code: fibCode,
+      "Which of the following is used to convert data into an unreadable form that can later be restored using the appropriate key?",
     options: [
-      {
-        id: "A",
-        text: "`O(1)` — only a fixed number of scalar variables are used.",
-      },
-      {
-        id: "B",
-        text: "`O(n)` — the array stores all intermediate Fibonacci numbers.",
-      },
-      {
-        id: "C",
-        text: "`O(log n)` — the call stack grows logarithmically.",
-      },
-      {
-        id: "D",
-        text: "`O(n^2)` — every recomputation stores a full table.",
-      },
+      { id: "A", text: "Encryption" },
+      { id: "B", text: "Compression" },
+      { id: "C", text: "Compilation" },
+      { id: "D", text: "Fragmentation" },
     ],
     correctOptionId: "A",
   },
   {
     id: "Q-016",
     index: 16,
-    question:
-      "Which reliable, connection-oriented transport protocol guarantees ordered delivery and is used by HTTP/HTTPS?",
+    question: "What is the output?",
+    code: swapSnippet,
     options: [
-      {
-        id: "A",
-        text: "TCP",
-      },
-      {
-        id: "B",
-        text: "UDP",
-      },
-      {
-        id: "C",
-        text: "ICMP",
-      },
-      {
-        id: "D",
-        text: "ARP",
-      },
+      { id: "A", text: "`5 2`" },
+      { id: "B", text: "`2 5`" },
+      { id: "C", text: "`7 5`" },
+      { id: "D", text: "`5 7`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-017",
     index: 17,
-    question:
-      "At which layer of the OSI model does a router primarily operate?",
+    question: "What is the output?",
+    code: doublingSnippet,
     options: [
-      {
-        id: "A",
-        text: "Network layer (Layer 3) — forwarding packets based on IP addresses.",
-      },
-      {
-        id: "B",
-        text: "Data link layer (Layer 2) — forwarding frames based on MAC addresses.",
-      },
-      {
-        id: "C",
-        text: "Transport layer (Layer 4) — multiplexing ports.",
-      },
-      {
-        id: "D",
-        text: "Session layer (Layer 5) — maintaining application dialogs.",
-      },
+      { id: "A", text: "4" },
+      { id: "B", text: "8" },
+      { id: "C", text: "16" },
+      { id: "D", text: "32" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-018",
     index: 18,
-    question:
-      "Given an IP `192.168.10.55/26`, what is the subnet mask and the broadcast address of the subnet?",
+    question: "What is the output?",
+    code: branchesSnippet,
     options: [
-      {
-        id: "A",
-        text: "Mask `255.255.255.192`; broadcast `192.168.10.63`.",
-      },
-      {
-        id: "B",
-        text: "Mask `255.255.255.128`; broadcast `192.168.10.55`.",
-      },
-      {
-        id: "C",
-        text: "Mask `255.255.255.224`; broadcast `192.168.10.127`.",
-      },
-      {
-        id: "D",
-        text: "Mask `255.255.255.0`; broadcast `192.168.10.255`.",
-      },
+      { id: "A", text: "10" },
+      { id: "B", text: "15" },
+      { id: "C", text: "20" },
+      { id: "D", text: "45" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-019",
     index: 19,
-    question:
-      "A browser receives HTTP status `304 Not Modified` for a cached resource. What does this mean?",
+    question: "What is the value of count?",
+    code: nestedCountSnippet,
     options: [
-      {
-        id: "A",
-        text: "The cached copy is still valid; the server sent no body and the client reuses its cache.",
-      },
-      {
-        id: "B",
-        text: "The resource changed and a new full body is delivered.",
-      },
-      {
-        id: "C",
-        text: "The client is forbidden from caching this resource permanently.",
-      },
-      {
-        id: "D",
-        text: "The server redirects the request to a new canonical URL.",
-      },
+      { id: "A", text: "3" },
+      { id: "B", text: "5" },
+      { id: "C", text: "6" },
+      { id: "D", text: "9" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-020",
     index: 20,
-    question:
-      "Which record type in DNS maps a hostname to an IPv4 address?",
+    question: "What is the output?",
+    code: whileSnippet,
     options: [
-      {
-        id: "A",
-        text: "`A` record",
-      },
-      {
-        id: "B",
-        text: "`AAAA` record",
-      },
-      {
-        id: "C",
-        text: "`MX` record",
-      },
-      {
-        id: "D",
-        text: "`CNAME` alias only (it cannot map directly).",
-      },
+      { id: "A", text: "3" },
+      { id: "B", text: "5" },
+      { id: "C", text: "6" },
+      { id: "D", text: "9" },
     ],
     correctOptionId: "A",
   },
   {
     id: "Q-021",
     index: 21,
-    question:
-      "The ACID property guarantees that either all operations of a transaction are committed or none are. Which letter names this guarantee?",
+    question: "What is the output?",
+    code: averageSnippet,
     options: [
-      {
-        id: "A",
-        text: "Atomicity — all-or-nothing execution.",
-      },
-      {
-        id: "B",
-        text: "Consistency — only constraints must hold, partial writes are allowed.",
-      },
-      {
-        id: "C",
-        text: "Isolation — each transaction waits forever.",
-      },
-      {
-        id: "D",
-        text: "Durability — data may be lost on crash.",
-      },
+      { id: "A", text: "4" },
+      { id: "B", text: "5" },
+      { id: "C", text: "6" },
+      { id: "D", text: "20" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-022",
     index: 22,
     question:
-      "Why is a B+ tree preferred over a binary search tree for database index pages stored on disk?",
+      "A program checks whether a number is divisible by both 3 and 5. Which condition is correct?",
     options: [
-      {
-        id: "A",
-        text: "High fan-out keeps the tree shallow, reducing disk seeks from root to leaf.",
-      },
-      {
-        id: "B",
-        text: "It stores all data only at the root, guaranteeing one seek.",
-      },
-      {
-        id: "C",
-        text: "It cannot store duplicate keys, so each lookup is deterministic.",
-      },
-      {
-        id: "D",
-        text: "It is always smaller in memory than the table itself.",
-      },
+      { id: "A", text: "`n % 3 == 0 OR n % 5 == 0`" },
+      { id: "B", text: "`n % 3 == 0 AND n % 5 == 0`" },
+      { id: "C", text: "`n / 3 == 0 AND n / 5 == 0`" },
+      { id: "D", text: "`n % 15 == 1`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-023",
     index: 23,
-    question:
-      "Which SQL `JOIN` returns only the rows that match in both tables (no unmatched rows)?",
+    question: "What is the final value of `x`?",
+    code: changeFunctionSnippet,
     options: [
-      {
-        id: "A",
-        text: "`INNER JOIN`",
-      },
-      {
-        id: "B",
-        text: "`LEFT JOIN`",
-      },
-      {
-        id: "C",
-        text: "`RIGHT JOIN`",
-      },
-      {
-        id: "D",
-        text: "`FULL OUTER JOIN`",
-      },
+      { id: "A", text: "7" },
+      { id: "B", text: "10" },
+      { id: "C", text: "12" },
+      { id: "D", text: "14" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-024",
     index: 24,
-    question:
-      "A table is in 3NF. Which statement is necessarily true?",
+    question: "What is the output?",
+    code: countAboveSnippet,
     options: [
-      {
-        id: "A",
-        text: "No non-prime attribute is transitively dependent on the primary key.",
-      },
-      {
-        id: "B",
-        text: "Every determinant is a superkey (which is strictly Boyce-Codd, not 3NF).",
-      },
-      {
-        id: "C",
-        text: "There are no foreign keys in the table.",
-      },
-      {
-        id: "D",
-        text: "The table has a composite key in every relation.",
-      },
+      { id: "A", text: "2" },
+      { id: "B", text: "3" },
+      { id: "C", text: "4" },
+      { id: "D", text: "5" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-025",
     index: 25,
-    question:
-      "You create an index on a column where 99% of the rows share the same value. What is the most likely effect on point lookups?",
+    question: "What is the output?",
+    code: breakSnippet,
     options: [
-      {
-        id: "A",
-        text: "The optimizer may ignore the index and scan the table because the column has very low selectivity.",
-      },
-      {
-        id: "B",
-        text: "The index always makes lookups faster regardless of data distribution.",
-      },
-      {
-        id: "C",
-        text: "Every insert now runs in `O(1)` by appending to the index.",
-      },
-      {
-        id: "D",
-        text: "The index is dropped automatically by the engine.",
-      },
+      { id: "A", text: "3" },
+      { id: "B", text: "6" },
+      { id: "C", text: "8" },
+      { id: "D", text: "15" },
     ],
     correctOptionId: "A",
   },
@@ -787,302 +641,155 @@ export const MOCK_QUESTIONS: Question[] = [
     id: "Q-026",
     index: 26,
     question:
-      "Which of the four Coffman conditions must hold simultaneously for a deadlock to occur?",
+      "Which value of `n` makes the following condition true: `if n % 2 == 0 AND n > 10`?",
     options: [
-      {
-        id: "A",
-        text: "Mutual exclusion, hold-and-wait, no preemption, and circular wait.",
-      },
-      {
-        id: "B",
-        text: "Preemption, serializability, paging, and swapping.",
-      },
-      {
-        id: "C",
-        text: "Atomicity, isolation, caching, and file locking.",
-      },
-      {
-        id: "D",
-        text: "Scheduling, aging, starvation, and priority inversion.",
-      },
+      { id: "A", text: "7" },
+      { id: "B", text: "9" },
+      { id: "C", text: "12" },
+      { id: "D", text: "15" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-027",
     index: 27,
-    question:
-      "A context switch refers to which operation?",
+    question: "What is the output?",
+    code: swapArraySnippet,
     options: [
-      {
-        id: "A",
-        text: "Saving the CPU state of the current process and loading the saved state of the next process.",
-      },
-      {
-        id: "B",
-        text: "Loading a new page table entry during a TLB miss.",
-      },
-      {
-        id: "C",
-        text: "Swapping address spaces into the swap partition.",
-      },
-      {
-        id: "D",
-        text: "Compiling a new binary when a process changes.",
-      },
+      { id: "A", text: "`5 20`" },
+      { id: "B", text: "`20 5`" },
+      { id: "C", text: "`10 15`" },
+      { id: "D", text: "`15 10`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-028",
     index: 28,
-    question:
-      "The LRU cache replacement strategy below assumes earlier use implies future use. Which subtle issue makes hardware LRU approximated rather than exact?",
-    code: lruCode,
+    question: "What is the output?",
+    code: charCountSnippet,
     options: [
-      {
-        id: "A",
-        text: "Exact per-line access timestamps are expensive to maintain, so real designs use approximations like clock bits.",
-      },
-      {
-        id: "B",
-        text: "LRU is exact in hardware but only in multicore configurations.",
-      },
-      {
-        id: "C",
-        text: "Cache lines never get reused, so recency information is meaningless.",
-      },
-      {
-        id: "D",
-        text: "The LRU stack cannot be stored in main memory.",
-      },
+      { id: "A", text: "1" },
+      { id: "B", text: "2" },
+      { id: "C", text: "3" },
+      { id: "D", text: "5" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-029",
     index: 29,
-    question:
-      "Two threads increment a shared counter without synchronization. `counter += 1` compiles to load, add, store. What can happen?",
+    question: "What is the output?",
+    code: halvingSnippet,
     options: [
-      {
-        id: "A",
-        text: "Interleaving can lose an update — the final value may be less than the number of increments.",
-      },
-      {
-        id: "B",
-        text: "The final value is always exact because `+=` is atomic on all CPUs.",
-      },
-      {
-        id: "C",
-        text: "The program deadlocks because both threads hold the counter.",
-      },
-      {
-        id: "D",
-        text: "The kernel schedules the threads serially to avoid interference.",
-      },
+      { id: "A", text: "1" },
+      { id: "B", text: "2" },
+      { id: "C", text: "3" },
+      { id: "D", text: "5" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-030",
     index: 30,
-    question:
-      "Belady\u2019s anomaly states that for some reference strings, FIFO page replacement can behave how?",
+    question: "What does this code determine?",
+    code: primeSnippet,
     options: [
-      {
-        id: "A",
-        text: "Increasing the number of frames can increase the number of page faults.",
-      },
-      {
-        id: "B",
-        text: "More frames always monotonically decrease page faults.",
-      },
-      {
-        id: "C",
-        text: "Page faults become zero when any second-level cache is enabled.",
-      },
-      {
-        id: "D",
-        text: "FIFO degenerates into an optimal replacement strategy.",
-      },
+      { id: "A", text: "Whether n is even" },
+      { id: "B", text: "Whether n is positive" },
+      { id: "C", text: "Whether n is prime" },
+      { id: "D", text: "Whether n is a perfect square" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-031",
     index: 31,
-    question:
-      "After inserting the key `18` into the BST below using the standard insertion routine, where does the new node appear and what is the resulting worst-case search cost for `18`?",
-    code: bstInsertCode,
+    question: "What is the output?",
+    code: recursionSnippet,
     options: [
-      {
-        id: "A",
-        text: "As the left child of `20`, reachable in `O(log n)` time on a balanced tree.",
-      },
-      {
-        id: "B",
-        text: "As the right child of the root, immediately reachable in `O(1)` time.",
-      },
-      {
-        id: "C",
-        text: "As a leaf that overwrites the existing node that previously stored `18`.",
-      },
-      {
-        id: "D",
-        text: "Insertion is rejected because keys below the root are never added.",
-      },
+      { id: "A", text: "24" },
+      { id: "B", text: "36" },
+      { id: "C", text: "48" },
+      { id: "D", text: "720" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-032",
     index: 32,
-    question:
-      "Which tree traversal of a Binary Search Tree visits its nodes in ascending sorted order?",
+    question: "What is the output?",
+    code: nestedRecursionSnippet,
     options: [
-      {
-        id: "A",
-        text: "Pre-order traversal, which processes the root before its children.",
-      },
-      {
-        id: "B",
-        text: "In-order traversal, which visits the left subtree, then the node, then the right subtree.",
-      },
-      {
-        id: "C",
-        text: "Post-order traversal, which processes children before the root.",
-      },
-      {
-        id: "D",
-        text: "Level-order traversal, which visits by increasing depth.",
-      },
+      { id: "A", text: "5" },
+      { id: "B", text: "8" },
+      { id: "C", text: "13" },
+      { id: "D", text: "21" },
     ],
     correctOptionId: "B",
   },
   {
     id: "Q-033",
     index: 33,
-    question:
-      "A stack is the most natural data structure for which of the following operations?",
+    question: "What is the output?",
+    code: arraySnippet,
     options: [
-      {
-        id: "A",
-        text: "Maintaining the order of a round-robin scheduler.",
-      },
-      {
-        id: "B",
-        text: "Matching opening and closing delimiters such as `( ) [ ]` in a source file.",
-      },
-      {
-        id: "C",
-        text: "Storing items in strict first-in first-out retrieval order.",
-      },
-      {
-        id: "D",
-        text: "Allowing random access to the middle of a collection.",
-      },
+      { id: "A", text: "`10 6 2`" },
+      { id: "B", text: "`14 8 2`" },
+      { id: "C", text: "`14 8 4`" },
+      { id: "D", text: "`10 7 2`" },
     ],
     correctOptionId: "B",
   },
   {
     id: "Q-034",
     index: 34,
-    question:
-      "Compared to a singly linked list, what is the primary advantage of using a dynamic array for random access by index?",
+    question: "What is the output?",
+    code: pointerSnippet,
     options: [
-      {
-        id: "A",
-        text: "Dynamic arrays support `O(1)` indexing, while linked lists require `O(n)` traversal to reach the k-th element.",
-      },
-      {
-        id: "B",
-        text: "Dynamic arrays never need to reallocate when growing.",
-      },
-      {
-        id: "C",
-        text: "Dynamic arrays store each element in a separate heap allocation.",
-      },
-      {
-        id: "D", 
-        text: "Dynamic arrays guarantee constant-time insertion at any position.",
-      },
+      { id: "A", text: "`10 20`" },
+      { id: "B", text: "`20 10`" },
+      { id: "C", text: "`30 20`" },
+      { id: "D", text: "`20 30`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-035",
     index: 35,
-    question:
-      "Which collection type supports efficient insertion and deletion at both its front and its back, making it ideal for a task where items enter and leave from either end?",
+    question: "What is the output?",
+    code: referenceSnippet,
     options: [
-      {
-        id: "A",
-        text: "A priority queue, which orders every element by value.",
-      },
-      {
-        id: "B",
-        text: "A stack, which only exposes one end.",
-      },
-      {
-        id: "C",
-        text: "A doubly-ended queue (deque).",
-      },
-      {
-        id: "D",
-        text: "A singly linked list traversed from the tail.",
-      },
+      { id: "A", text: "`15 25`" },
+      { id: "B", text: "`25 15`" },
+      { id: "C", text: "`40 25`" },
+      { id: "D", text: "`25 40`" },
     ],
-    correctOptionId: "C",
+    correctOptionId: "B",
   },
   {
     id: "Q-036",
     index: 36,
-    question:
-      "Given the binarySearch routine shown, which precondition must `arr` satisfy for the function to behave correctly?",
-    code: binarySearchCode,
+    question: "What is the time complexity of the following code?",
+    code: loopSnippet,
     options: [
-      {
-        id: "A",
-        text: "`arr` must contain only positive integers.",
-      },
-      {
-        id: "B",
-        text: "`arr` must be sorted in non-decreasing order.",
-      },
-      {
-        id: "C",
-        text: "`arr` must have a size that is a power of two.",
-      },
-      {
-        id: "D",
-        text: "`arr` must contain no duplicate values.",
-      },
+      { id: "A", text: "`O(log n)`" },
+      { id: "B", text: "`O(n)`" },
+      { id: "C", text: "`O(n log n)`" },
+      { id: "D", text: "`O(n²)`" },
     ],
     correctOptionId: "B",
   },
   {
     id: "Q-037",
     index: 37,
-    question:
-      "Which statement accurately describes merge sort?",
+    question: "What is the time complexity?",
+    code: complexLoopSnippet,
     options: [
-      {
-        id: "A",
-        text: "It is an in-place unstable sort with `O(n^2)` worst-case time.",
-      },
-      {
-        id: "B",
-        text: "It divides the array, sorts each half recursively, and merges, giving `O(n log n)` worst-case time.",
-      },
-      {
-        id: "C",
-        text: "It selects a pivot and partitions, guaranteeing `O(n log n)` only in the average case.",
-      },
-      {
-        id: "D",
-        text: "It has `O(n)` time when data arrives already mostly sorted.",
-      },
+      { id: "A", text: "`O(log n)`" },
+      { id: "B", text: "`O(n)`" },
+      { id: "C", text: "`O(n log n)`" },
+      { id: "D", text: "`O(n²)`" },
     ],
     correctOptionId: "B",
   },
@@ -1090,49 +797,25 @@ export const MOCK_QUESTIONS: Question[] = [
     id: "Q-038",
     index: 38,
     question:
-      "A problem is best solved with dynamic programming when it exhibits which two properties?",
+      "A stack initially contains `10, 20, 30`, where `30` is at the top. The following operations are performed: `POP()`, `PUSH(40)`, `POP()`, `PUSH(50)`, `PUSH(60)`, `POP()`. What is the final stack from bottom to top?",
     options: [
-      {
-        id: "A",
-        text: "Optimal substructure and overlapping subproblems.",
-      },
-      {
-        id: "B",
-        text: "Greedy choice and acyclic dependency order.",
-      },
-      {
-        id: "C",
-        text: "Randomized pivoting and divide-and-conquer splitting.",
-      },
-      {
-        id: "D",
-        text: "Memoization of parameters that never repeat.",
-      },
+      { id: "A", text: "`10 20 40`" },
+      { id: "B", text: "`10 20 50`" },
+      { id: "C", text: "`10 20 50 60`" },
+      { id: "D", text: "`10 20 40 50`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-039",
     index: 39,
     question:
-      "Why does Dijkstra's shortest-path algorithm produce incorrect results when the graph contains negative edge weights?",
+      "A queue initially contains `10 20 30 40`, where `10` is at the front. Operations: `DEQUEUE()`, `ENQUEUE(50)`, `DEQUEUE()`, `ENQUEUE(60)`. What is the final queue?",
     options: [
-      {
-        id: "A",
-        text: "Because it relies on weights summing to exactly one at every step.",
-      },
-      {
-        id: "B",
-        text: "Because once a vertex is finalized it is never relaxed again, but a negative edge could later offer a cheaper path.",
-      },
-      {
-        id: "C",
-        text: "Because it requires an adjacency list, which cannot store negative integers.",
-      },
-      {
-        id: "D",
-        text: "Because it always returns the longest path when negative weights are present.",
-      },
+      { id: "A", text: "`20 30 40 50 60`" },
+      { id: "B", text: "`30 40 50 60`" },
+      { id: "C", text: "`20 30 40 60`" },
+      { id: "D", text: "`30 40 60 50`" },
     ],
     correctOptionId: "B",
   },
@@ -1140,225 +823,116 @@ export const MOCK_QUESTIONS: Question[] = [
     id: "Q-040",
     index: 40,
     question:
-      "What is the time complexity of random-access retrieval of the element at a known index in a dynamic array?",
+      "Consider the sorted array `[3, 7, 11, 15, 19, 23, 27, 31, 35]`. Using standard binary search, how many element comparisons are required to find `27`?",
     options: [
-      {
-        id: "A",
-        text: "`O(1)` constant time through pointer arithmetic on the base address.",
-      },
-      {
-        id: "B",
-        text: "`O(n)` because every element before the index must be visited.",
-      },
-      {
-        id: "C",
-        text: "`O(log n)` because the index must be located via binary search.",
-      },
-      {
-        id: "D",
-        text: "`O(n log n)` for the copy that must precede the lookup.",
-      },
+      { id: "A", text: "1" },
+      { id: "B", text: "2" },
+      { id: "C", text: "3" },
+      { id: "D", text: "4" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-041",
     index: 41,
     question:
-      "In JavaScript, `typeof null` evaluates to which of the following at runtime?",
+      "An array is `[5, 2, 8, 1, 3]`. After one complete pass of Bubble Sort in ascending order, what will the array be?",
     options: [
-      {
-        id: "A",
-        text: "`\"null\"`",
-      },
-      {
-        id: "B",
-        text: "`\"object\"`",
-      },
-      {
-        id: "C",
-        text: "`undefined`",
-      },
-      {
-        id: "D",
-        text: "`0`",
-      },
+      { id: "A", text: "`[2, 5, 1, 3, 8]`" },
+      { id: "B", text: "`[2, 5, 1, 3, 8]`" },
+      { id: "C", text: "`[2, 1, 3, 5, 8]`" },
+      { id: "D", text: "`[1, 2, 3, 5, 8]`" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "A",
   },
   {
     id: "Q-042",
     index: 42,
     question:
-      "What is the result of evaluating `\"2\" + 3` in JavaScript, and why?",
+      "A hash table has size 10 and uses `hash(key) = key % 10`. Using linear probing, insert `23, 43, 13, 27`. At which positions will these values be stored?",
     options: [
-      {
-        id: "A",
-        text: "`5`, because the numeric operands are added mathematically.",
-      },
-      {
-        id: "B",
-        text: "`\"23\"`, because the presence of a string operand makes `+` perform concatenation.",
-      },
-      {
-        id: "C",
-        text: "`NaN`, because mixing types throws a TypeError.",
-      },
-      {
-        id: "D",
-        text: "`\"2 3\"`, because a space is inserted between operands.",
-      },
+      { id: "A", text: "`23→3, 43→4, 13→5, 27→7`" },
+      { id: "B", text: "`23→3, 43→4, 13→5, 27→7`" },
+      { id: "C", text: "`23→3, 43→3, 13→3, 27→7`" },
+      { id: "D", text: "`23→3, 43→4, 13→3, 27→7`" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "A",
   },
   {
     id: "Q-043",
     index: 43,
     question:
-      "Which of the following best describes the difference between Python lists and tuples?",
+      "A singly linked list contains `10 → 20 → 30 → 40 → NULL`. The following operations are performed: insert `25` after the node containing `20`, delete the node containing `40`, insert `5` at the beginning. What is the resulting list?",
     options: [
-      {
-        id: "A",
-        text: "Lists are immutable and tuples are mutable.",
-      },
-      {
-        id: "B",
-        text: "Tuples are immutable, so they can be used as dictionary keys; lists are mutable and cannot.",
-      },
-      {
-        id: "C",
-        text: "Lists are always faster than tuples for every operation.",
-      },
-      {
-        id: "D",
-        text: "Tuples allocate memory per element while lists store values in a single block.",
-      },
+      { id: "A", text: "`5 → 10 → 20 → 25 → 30 → NULL`" },
+      { id: "B", text: "`10 → 20 → 25 → 30 → 40 → NULL`" },
+      { id: "C", text: "`5 → 10 → 20 → 30 → 25 → NULL`" },
+      { id: "D", text: "`5 → 10 → 20 → 25 → 30 → 40 → NULL`" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "A",
   },
   {
     id: "Q-044",
     index: 44,
     question:
-      "What does the JavaScript program shown print to the console?",
-    code: reduceCode,
+      "Consider the graph with neighbors `A → B, C`, `B → D, E`, and `C → F`. Starting from `A`, what is a possible Breadth-First Search (BFS) traversal?",
     options: [
-      {
-        id: "A",
-        text: "`10`",
-      },
-      {
-        id: "B",
-        text: "`24`",
-      },
-      {
-        id: "C",
-        text: "`4`",
-      },
-      {
-        id: "D",
-        text: "`[1, 2, 3, 4]`",
-      },
+      { id: "A", text: "`A B C D E F`" },
+      { id: "B", text: "`A B D E C F`" },
+      { id: "C", text: "`A C F B E D`" },
+      { id: "D", text: "`A D B E C F`" },
     ],
     correctOptionId: "A",
   },
   {
     id: "Q-045",
     index: 45,
-    question:
-      "When `console.log(x); var x = 5;` runs in JavaScript, what value is logged and why?",
+    question: "Consider the following code. What is the time complexity?",
+    code: tripleLoopSnippet,
     options: [
-      {
-        id: "A",
-        text: "`undefined`, because the `var x` declaration is hoisted to the top of the scope while the assignment stays in place.",
-      },
-      {
-        id: "B",
-        text: "`5`, because the declaration and initialization are hoisted together.",
-      },
-      {
-        id: "C",
-        text: "A ReferenceError, because `x` is used before it is declared.",
-      },
-      {
-        id: "D",
-        text: "`null`, because hoisted variables are initialized to null.",
-      },
+      { id: "A", text: "`O(n²)`" },
+      { id: "B", text: "`O(n log n)`" },
+      { id: "C", text: "`O(n log² n)`" },
+      { id: "D", text: "`O(n² log n)`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-046",
     index: 46,
     question:
-      "Which layer of the OSI model does the Hypertext Transfer Protocol (HTTP) primarily operate at?",
+      "Given the array `[10, 5, 8, 3, 6]`, what will the array be after performing one pass of Selection Sort in ascending order?",
     options: [
-      {
-        id: "A",
-        text: "Transport layer, since it guarantees delivery of packets.",
-      },
-      {
-        id: "B",
-        text: "Application layer, as the highest-level protocol that services end-user applications.",
-      },
-      {
-        id: "C",
-        text: "Network layer, because it provides IP addressing.",
-      },
-      {
-        id: "D",
-        text: "Data-link layer, as it frames each request into MAC addresses.",
-      },
+      { id: "A", text: "`[3, 5, 8, 10, 6]`" },
+      { id: "B", text: "`[3, 5, 8, 10, 6]`" },
+      { id: "C", text: "`[5, 10, 8, 3, 6]`" },
+      { id: "D", text: "`[3, 10, 8, 5, 6]`" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "A",
   },
   {
     id: "Q-047",
     index: 47,
-    question:
-      "Which property most clearly distinguishes TCP from UDP?",
+    question: "What is the output?",
+    code: stackRecursionSnippet,
     options: [
-      {
-        id: "A",
-        text: "TCP is connection-oriented and provides ordered, reliable delivery; UDP is connectionless and best-effort.",
-      },
-      {
-        id: "B",
-        text: "UDP is connection-oriented while TCP is connectionless.",
-      },
-      {
-        id: "C",
-        text: "TCP is used only for video streaming while UDP is used only for web pages.",
-      },
-      {
-        id: "D",
-        text: "UDP guarantees in-order delivery while TCP drops out-of-order segments.",
-      },
+      { id: "A", text: "`3 2 1`" },
+      { id: "B", text: "`1 2 3 3 2 1`" },
+      { id: "C", text: "`3 2 1 1 2 3`" },
+      { id: "D", text: "`3 2 1 2 3`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "C",
   },
   {
     id: "Q-048",
     index: 48,
     question:
-      "What is the primary purpose of network address translation (NAT) at a home router?",
+      "A queue initially contains `10 → 20 → 30 → 40`. Perform the following operations: `DEQUEUE()`, `ENQUEUE(50)`, `DEQUEUE()`, `ENQUEUE(60)`. What is the final queue?",
     options: [
-      {
-        id: "A",
-        text: "To encrypt traffic between the router and the ISP.",
-      },
-      {
-        id: "B",
-        text: "To map many private IP addresses to one or a few public IP addresses so multiple devices share scarce public addresses.",
-      },
-      {
-        id: "C",
-        text: "To replace the DNS resolver on every connected device.",
-      },
-      {
-        id: "D",
-        text: "To split the collision domain into separate broadcast domains.",
-      },
+      { id: "A", text: "`20 → 30 → 40 → 50 → 60`" },
+      { id: "B", text: "`30 → 40 → 50 → 60`" },
+      { id: "C", text: "`20 → 30 → 40 → 60`" },
+      { id: "D", text: "`30 → 40 → 60 → 50`" },
     ],
     correctOptionId: "B",
   },
@@ -1366,49 +940,25 @@ export const MOCK_QUESTIONS: Question[] = [
     id: "Q-049",
     index: 49,
     question:
-      "Which protocol resolves a human-readable domain name into an IP address, and over which typical transport port does it operate?",
+      "A singly linked list is `10 → 20 → 30 → 40 → NULL`. If the following operations are performed: (1) insert `25` after `20`, (2) delete `30`, (3) insert `5` at the beginning. What is the resulting list?",
     options: [
-      {
-        id: "A",
-        text: "DHCP over port 68.",
-      },
-      {
-        id: "B",
-        text: "DNS, conventionally over UDP port 53.",
-      },
-      {
-        id: "C", 
-        text: "ARP over the network interface for local resolution.",
-      },
-      {
-        id: "D",
-        text: "ICMP over any ephemeral port.",
-      },
+      { id: "A", text: "`5 → 10 → 20 → 25 → 40 → NULL`" },
+      { id: "B", text: "`10 → 20 → 25 → 40 → NULL`" },
+      { id: "C", text: "`5 → 10 → 20 → 30 → 40 → NULL`" },
+      { id: "D", text: "`5 → 10 → 20 → 25 → 30 → 40 → NULL`" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "A",
   },
   {
     id: "Q-050",
     index: 50,
     question:
-      "Which networking device forwards frames based on MAC addresses at Layer 2 of the OSI model?",
+      "Consider the sorted array `[2, 5, 8, 12, 16, 21, 25, 30, 35]`. Using binary search, how many comparisons are required to find `25`?",
     options: [
-      {
-        id: "A",
-        text: "A router, which routes based on IP addresses.",
-      },
-      {
-        id: "B",
-        text: "A network switch, which learns MAC address-to-port mappings.",
-      },
-      {
-        id: "C",
-        text: "A hub, which intelligently filters each incoming frame.",
-      },
-      {
-        id: "D",
-        text: "A modem, which provides the physical medium signal regeneration.",
-      },
+      { id: "A", text: "1" },
+      { id: "B", text: "2" },
+      { id: "C", text: "3" },
+      { id: "D", text: "4" },
     ],
     correctOptionId: "B",
   },
@@ -1416,150 +966,77 @@ export const MOCK_QUESTIONS: Question[] = [
     id: "Q-051",
     index: 51,
     question:
-      "How does a `PRIMARY KEY` constraint differ from a `UNIQUE` constraint in a relational table?",
+      "Consider the following binary tree: the root `10` has left child `5` and right child `15`; `5` has left child `2` and right child `7`; `15` has a right child `20`. What is the inorder traversal?",
     options: [
-      {
-        id: "A",
-        text: "A primary key must be unique, is not null, and only one exists per table; a unique column also allows NULL unless further constrained.",
-      },
-      {
-        id: "B",
-        text: "A unique constraint must be on a single column while a primary key can span many.",
-      },
-      {
-        id: "C",
-        text: "A primary key allows duplicate values as long as they are indexed.",
-      },
-      {
-        id: "D",
-        text: "A unique constraint creates a clustered index while a primary key does not.",
-      },
+      { id: "A", text: "`10 5 2 7 15 20`" },
+      { id: "B", text: "`2 5 7 10 15 20`" },
+      { id: "C", text: "`2 7 5 20 15 10`" },
+      { id: "D", text: "`10 5 7 2 15 20`" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-052",
     index: 52,
     question:
-      "A table is in Third Normal Form (3NF). Which of the following must also be true about its non-key attributes?",
+      "Which sequence represents a valid preorder traversal of a Binary Search Tree?",
     options: [
-      {
-        id: "A",
-        text: "They may still contain transitive dependencies on other non-key attributes.",
-      },
-      {
-        id: "B",
-        text: "They must be fully dependent on the primary key and free of transitive dependencies via another non-key column.",
-      },
-      {
-        id: "C",
-        text: "They must be repeated across multiple rows to reduce join costs.",
-      },
-      {
-        id: "D",
-        text: "They must each be a foreign key into a separate table.",
-      },
+      { id: "A", text: "`10, 5, 2, 7, 15, 12, 20`" },
+      { id: "B", text: "`10, 15, 5, 2, 7, 12, 20`" },
+      { id: "C", text: "`10, 5, 15, 20, 2, 7, 12`" },
+      { id: "D", text: "`10, 2, 15, 7, 5, 12, 20`" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "A",
   },
   {
     id: "Q-053",
     index: 53,
     question:
-      "Which join type returns only rows that have matching values in both tables being combined?",
+      "Consider the graph with neighbors `A → B, C`, `B → D, E`, and `C → F`. Starting from `A`, what is the Breadth-First Search (BFS) traversal?",
     options: [
-      {
-        id: "A",
-        text: "`LEFT JOIN`, which keeps all rows from the left table.",
-      },
-      {
-        id: "B",
-        text: "`INNER JOIN`, which keeps only rows with matches in both tables.",
-      },
-      {
-        id: "C",
-        text: "`RIGHT JOIN`, which keeps all rows from the right table.",
-      },
-      {
-        id: "D",
-        text: "`FULL OUTER JOIN`, which keeps all rows from both tables.",
-      },
+      { id: "A", text: "`A B C D E F`" },
+      { id: "B", text: "`A B D E C F`" },
+      { id: "C", text: "`A C F B D E`" },
+      { id: "D", text: "`A D B E C F`" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "A",
   },
   {
     id: "Q-054",
     index: 54,
     question:
-      "What does the SQL query shown compute for customers in the East region?",
-    code: invoiceSqlCode,
+      "Using the same graph, where `A → B, C`, `B → D, E`, and `C → F`, and starting from `A` visiting the left neighbour before the right neighbour, what is a possible Depth-First Search (DFS) traversal?",
     options: [
-      {
-        id: "A",
-        text: "The names of all customers who have never placed an order.",
-      },
-      {
-        id: "B",
-        text: "The per-customer total `spent` only for customers with at least one order, grouped by name.",
-      },
-      {
-        id: "C",
-        text: "The average order total across all regions.",
-      },
-      {
-        id: "D",
-        text: "The number of orders placed by each customer.",
-      },
+      { id: "A", text: "`A B D E C F`" },
+      { id: "B", text: "`A B C D E F`" },
+      { id: "C", text: "`A C F B D E`" },
+      { id: "D", text: "`A D B E C F`" },
     ],
-    correctOptionId: "B",
+    correctOptionId: "A",
   },
   {
     id: "Q-055",
     index: 55,
     question:
-      "Which ACID property ensures that a transaction is either fully committed or fully rolled back, so no partial state is visible?",
+      "A hash table has size 10 and uses `hash(key) = key % 10`. Using linear probing, insert `23, 33, 43, 12`. At which positions will the elements be stored?",
     options: [
-      {
-        id: "A",
-        text: "Atomicity, which treats the transaction as a single indivisible unit.",
-      },
-      {
-        id: "B",
-        text: "Consistency, which only enforces referential integrity.",
-      },
-      {
-        id: "C",
-        text: "Isolation, which governs concurrent transaction scheduling.",
-      },
-      {
-        id: "D",
-        text: "Durability, which applies only after a crash.",
-      },
+      { id: "A", text: "`23→3, 33→4, 43→5, 12→2`" },
+      { id: "B", text: "`23→3, 33→3, 43→3, 12→2`" },
+      { id: "C", text: "`23→3, 33→4, 43→5, 12→3`" },
+      { id: "D", text: "`23→2, 33→3, 43→4, 12→2`" },
     ],
     correctOptionId: "A",
   },
   {
     id: "Q-056",
     index: 56,
-    question:
-      "Which of the following is NOT one of the four necessary conditions for deadlock?",
+    question: "What is the time complexity of the following code?",
+    code: doublingInnerSnippet,
     options: [
-      {
-        id: "A",
-        text: "Mutual exclusion over held resources.",
-      },
-      {
-        id: "B",
-        text: "Hold and wait for additional resources.",
-      },
-      {
-        id: "C",
-        text: "Preemptive scheduling of CPU-bound processes.",
-      },
-      {
-        id: "D",
-        text: "Circular wait among a set of processes.",
-      },
+      { id: "A", text: "`O(log n)`" },
+      { id: "B", text: "`O(n)`" },
+      { id: "C", text: "`O(n log n)`" },
+      { id: "D", text: "`O(n²)`" },
     ],
     correctOptionId: "C",
   },
@@ -1567,24 +1044,12 @@ export const MOCK_QUESTIONS: Question[] = [
     id: "Q-057",
     index: 57,
     question:
-      "Under the LRU page-replacement policy, which page is evicted when a page fault occurs?",
+      "Given the sorted array `[1, 2, 4, 7, 9, 11]`, using the two-pointer technique, which pair has a sum of `13`?",
     options: [
-      {
-        id: "A",
-        text: "The page that has been in memory the longest by insertion time.",
-      },
-      {
-        id: "B",
-        text: "The page whose most recent use is the farthest in the past.",
-      },
-      {
-        id: "C",
-        text: "The page with the highest reference count.",
-      },
-      {
-        id: "D",
-        text: "The page that was just brought into memory.",
-      },
+      { id: "A", text: "1 and 11" },
+      { id: "B", text: "2 and 11" },
+      { id: "C", text: "4 and 9" },
+      { id: "D", text: "7 and 9" },
     ],
     correctOptionId: "B",
   },
@@ -1592,75 +1057,38 @@ export const MOCK_QUESTIONS: Question[] = [
     id: "Q-058",
     index: 58,
     question:
-      "A race condition occurs when the outcome of a shared-resource computation depends on what?",
+      "What data structure is commonly used to check whether parentheses in an expression are balanced?",
     options: [
-      {
-        id: "A",
-        text: "The relative timing and interleaving of multiple threads or processes accessing shared data.",
-      },
-      {
-        id: "B",
-        text: "The total amount of physical memory installed in the machine.",
-      },
-      {
-        id: "C",
-        text: "The clock speed of the CPU core that executes the final instruction.",
-      },
-      {
-        id: "D",
-        text: "The order in which the filesystem repaired sectors at boot.",
-      },
+      { id: "A", text: "Queue" },
+      { id: "B", text: "Stack" },
+      { id: "C", text: "Heap" },
+      { id: "D", text: "Graph" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-059",
     index: 59,
     question:
-      "Which statement best contrasts threads and processes in a modern operating system?",
+      "What is the value of `dp[5]` if the Fibonacci sequence is calculated using `dp[0] = 0`, `dp[1] = 1`, `dp[n] = dp[n-1] + dp[n-2]`?",
     options: [
-      {
-        id: "A",
-        text: "Threads share the address space of their owning process and are cheaper to create than whole processes.",
-      },
-      {
-        id: "B",
-        text: "Processes always share memory with one another by default while threads never do.",
-      },
-      {
-        id: "C",
-        text: "Threads each own a separate page table and cannot communicate.",
-      },
-      {
-        id: "D",
-        text: "A process cannot contain more than one thread.",
-      },
+      { id: "A", text: "3" },
+      { id: "B", text: "5" },
+      { id: "C", text: "8" },
+      { id: "D", text: "13" },
     ],
-    correctOptionId: "A",
+    correctOptionId: "B",
   },
   {
     id: "Q-060",
     index: 60,
-    question:
-      "In the producer-consumer code shown, what is the role of the `empty` and `full` semaphores?",
-    code: semaphoreCode,
+    question: "Consider the following function. What is the time complexity of this function?",
+    code: halfRecursionSnippet,
     options: [
-      {
-        id: "A",
-        text: "They count available buffer slots (`empty`) and waiting consumers (`full`).",
-      },
-      {
-        id: "B",
-        text: "`empty` counts free slots and `full` counts filled slots, so producers wait on `empty` and signal `full` in a loop.",
-      },
-      {
-        id: "C",
-        text: "They both serialize access to the display device.",
-      },
-      {
-        id: "D",
-        text: "They hold the memory addresses of the buffer endpoints.",
-      },
+      { id: "A", text: "`O(log n)`" },
+      { id: "B", text: "`O(n)`" },
+      { id: "C", text: "`O(n log n)`" },
+      { id: "D", text: "`O(2^n)`" },
     ],
     correctOptionId: "B",
   },
