@@ -10,18 +10,35 @@ Guidance for AI coding agents and contributors working in this repository.
 | `npm run build`   | `tsc -b && vite build` — type-check then build      |
 | `npm run lint`    | oxlint (configured in `.oxlintrc.json`)             |
 | `npm run preview` | Serve the production build from `dist/`             |
+| `npm run server`  | Local execution proxy on 0.0.0.0:8787 (`POST /api/run`) |
+| `npm run start`   | Production server: serves `dist/` + `/api/*` on `PORT` |
 
 **Always run `npm run lint` and `npm run build` before finishing a task.** The
 build runs `tsc -b`, so type errors fail it.
 
 There is currently no test framework. Verify behavior manually (see below).
 
+## Environment
+
+Development and production servers read these from the environment:
+
+- `PORT` — backend port, default `8787`.
+- `PISTON_URL` — self-hosted Piston base URL, default `http://127.0.0.1:2000`.
+- `API_HOST` — Vite dev proxy target for `/api/*`, default `http://localhost:8787`.
+- Execution limits (defaults in `server/index.mjs`): `RUN_TIMEOUT_MS`,
+  `QUEUE_TIMEOUT_MS`, `MAX_CONCURRENCY`, `RATE_LIMIT_PER_MIN`, `MAX_CODE_BYTES`,
+  `MAX_STDIN_BYTES`, `BODY_LIMIT_BYTES`.
+
 ## Hard constraints
 
 These are product requirements, not preferences:
 
-1. **Frontend only.** Never add `fetch`, `axios`, `XMLHttpRequest`, WebSocket,
-   `/api/*` routes, or any server/backend code. Do not fake network calls.
+1. **Local execution proxy only.** The SPA may call the same-origin `/api/*`
+   routes (e.g. `POST /api/run`) and `fetch` is allowed only for that. All
+   server code lives in `server/`; it is the only permitted backend. Code
+   execution must go through the self-hosted Piston instance (`PISTON_URL`) —
+   never a third-party hosted execution API, and never directly from the
+   browser (no Piston URLs in the frontend).
 2. **Never reveal correctness.** Do not render `Question.correctOptionId`, scores,
    grades, or result/leaderboard/analytics UI. The participant must never learn
    whether an answer is right.
@@ -42,6 +59,7 @@ These are product requirements, not preferences:
 | Countdown / expiry   | `src/hooks/useAssessmentTimer.ts`               |
 | Local proctoring     | `src/hooks/useProctoring.ts`                    |
 | Persistence          | `src/lib/storage.ts` (the only `localStorage` access) |
+| Code execution proxy | `server/index.mjs` — `POST /api/run` → self-hosted Piston |
 | Mock questions       | `src/data/mockQuestions.ts`                     |
 | Code tokenizer       | `src/lib/codeHighlight.ts`                      |
 | Domain types         | `src/types/assessment.ts`                       |
@@ -93,4 +111,6 @@ After changes, manually confirm:
   nothing. Check `src/index.css` when adding tokens.
 - Raw Node/tsx cannot resolve the project's extensionless imports; use Vite to run
   or bundle code.
+- `server/index.mjs` is plain Node outside the `tsc -b` projects; run it directly
+  and keep it dependency-free.
 - `localStorage` access is guarded for SSR-safety in `storage.ts`; keep it that way.

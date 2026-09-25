@@ -2,7 +2,7 @@ import { cn } from "../../lib/utils";
 import { Icon } from "../ui/Icon";
 
 export interface TerminalEntry {
-  kind: "command" | "input" | "output" | "system";
+  kind: "command" | "input" | "output" | "system" | "error";
   text: string;
 }
 
@@ -17,7 +17,7 @@ interface OutputTerminalProps {
 
 export function OutputTerminal({
   entries,
-  emptyText = "Press Run to preview the sample output.",
+  emptyText = "Press Run to execute your program.",
   className,
   onBack,
   running = false,
@@ -77,6 +77,7 @@ export function OutputTerminal({
                   entry.kind === "input" && "text-terminal-muted",
                   entry.kind === "output" && "text-inverse-on-surface",
                   entry.kind === "system" && "text-terminal-muted",
+                  entry.kind === "error" && "text-red-300",
                 )}
               >
                 {entry.kind === "command" ? (
@@ -97,7 +98,7 @@ export function OutputTerminal({
           </div>
         )}
         <p className="mt-2 text-terminal-muted text-code-inline leading-4">
-          Locally simulated output — no compiler attached.
+          Executed through the local execution sandbox — no verdict is shown.
         </p>
       </div>
     </div>

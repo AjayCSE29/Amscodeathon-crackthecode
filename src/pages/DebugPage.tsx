@@ -14,8 +14,9 @@ import { DEBUG_QUESTIONS } from "../data/debugQuestions";
 import type { UseAssessmentApi } from "../hooks/useAssessment";
 import { useAssessmentTimer } from "../hooks/useAssessmentTimer";
 import { plainCode } from "../lib/codeHighlight";
+import { runCode, type RunResult } from "../lib/runClient";
 import { formatHMS } from "../lib/utils";
-import type { DebugProgramLanguage, DebugQuestion } from "../types/assessment";
+import type { DebugProgramLanguage } from "../types/assessment";
 
 const FILE_NAMES: Record<DebugProgramLanguage, string> = {
   "C++": "solution.cpp",
@@ -29,24 +30,6 @@ function buildCommand(language: DebugProgramLanguage): string {
     : language === "Python"
       ? "python3 solution.py"
       : "javac Main.java && java Main";
-}
-
-function buildTranscript(
-  question: DebugQuestion,
-  language: DebugProgramLanguage,
-): TerminalEntry[] {
-  const entries: TerminalEntry[] = [
-    { kind: "command", text: buildCommand(language) },
-  ];
-  question.sampleCases[language].forEach((sample, i) => {
-    if (sample.input) {
-      entries.push({ kind: "system", text: `Sample ${i + 1} input` });
-      entries.push({ kind: "input", text: sample.input });
-    }
-    entries.push({ kind: "system", text: `Sample ${i + 1} output` });
-    entries.push({ kind: "output", text: sample.output });
-  });
-  return entries;
 }
 
 interface DebugPageProps {
@@ -70,24 +53,13 @@ export function DebugPage({ api }: DebugPageProps) {
   const [outputs, setOutputs] = useState<Record<string, TerminalEntry[]>>({});
   const [view, setView] = useState<"editor" | "terminal">("editor");
   const [running, setRunning] = useState(false);
-  const runTimerRef = useRef<number | null>(null);
+  const runVersionRef = useRef(0);
 
   const language = session?.debugLanguage ?? "C++";
 
   const cancelPendingRun = useCallback(() => {
-    if (runTimerRef.current !== null) {
-      window.clearTimeout(runTimerRef.current);
-      runTimerRef.current = null;
-    }
+    runVersionRef.current += 1;
     setRunning(false);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (runTimerRef.current !== null) {
-        window.clearTimeout(runTimerRef.current);
-      }
-    };
   }, []);
 
   const handleExpire = useCallback(() => {
@@ -99,25 +71,64 @@ export function DebugPage({ api }: DebugPageProps) {
     handleExpire,
   );
 
-  const run = useCallback(() => {
+  const run = useCallback(async () => {
     if (!currentDebugQuestion) return;
-    const currentLanguage = session?.debugLanguage ?? "C++";
     const question = currentDebugQuestion;
-    cancelPendingRun();
+    const currentLanguage = session?.debugLanguage ?? "C++";
+    const runId = ++runVersionRef.current;
     setView("terminal");
     setRunning(true);
-    runTimerRef.current = window.setTimeout(() => {
-      runTimerRef.current = null;
-      setOutputs((prev) => ({
-        ...prev,
-        [`${question.id}:${currentLanguage}`]: buildTranscript(
-          question,
-          currentLanguage,
-        ),
-      }));
-      setRunning(false);
-    }, 700);
-  }, [currentDebugQuestion, session?.debugLanguage, cancelPendingRun]);
+
+    const code =
+      session?.codeEdits[`${question.id}:${currentLanguage}`] ??
+      plainCode(question.starters[currentLanguage]);
+    const entries: TerminalEntry[] = [
+      { kind: "command", text: buildCommand(currentLanguage) },
+    ];
+
+    for (const [i, sample] of question.sampleCases[
+      currentLanguage
+    ].entries()) {
+      if (runVersionRef.current !== runId) return;
+      const label = `Sample ${i + 1}`;
+      if (sample.input) {
+        entries.push({ kind: "system", text: `${label} input` });
+        entries.push({ kind: "input", text: sample.input });
+      }
+      entries.push({ kind: "system", text: `${label} output` });
+
+      if (runVersionRef.current !== runId) return;
+      const result: RunResult = await runCode({
+        language: currentLanguage,
+        code,
+        stdin: sample.input ?? "",
+      });
+      if (runVersionRef.current !== runId) return;
+
+      if (result.exitCode != null && result.exitCode !== 0) {
+        const diagnostics =
+          result.stderr.trim() !== ""
+            ? result.stderr.trim()
+            : "(program exited with a non-zero status)";
+        entries.push({ kind: "system", text: diagnostics });
+      } else {
+        const stdout = result.stdout.trim();
+        entries.push({
+          kind: "output",
+          text: stdout === "" ? "(no output)" : stdout,
+        });
+        const stderr = result.stderr.trim();
+        if (stderr !== "") entries.push({ kind: "system", text: stderr });
+      }
+    }
+
+    if (runVersionRef.current !== runId) return;
+    setOutputs((prev) => ({
+      ...prev,
+      [`${question.id}:${currentLanguage}`]: entries,
+    }));
+    setRunning(false);
+  }, [currentDebugQuestion, session]);
 
   const goEditor = useCallback(() => {
     cancelPendingRun();
