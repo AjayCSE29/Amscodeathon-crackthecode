@@ -22,7 +22,7 @@ export interface DebugQuestion {
   statement: string;
   starters: Record<DebugProgramLanguage, string[]>;
   sampleCases: Record<DebugProgramLanguage, DebugCase[]>;
-  bugHint?: string;
+  bugHints: Record<DebugProgramLanguage, string>;
 }
 
 export interface Candidate {

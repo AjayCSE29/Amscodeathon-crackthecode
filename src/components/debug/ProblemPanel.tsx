@@ -82,17 +82,16 @@ export function ProblemPanel({ question, language, className }: ProblemPanelProp
         ))}
       </div>
 
-      {question.bugHint ? (
-        <div className="rounded-lg bg-amber-soft border border-amber-border p-space-sm flex gap-2 items-start">
-          <Icon
-            name="lightbulb"
-            className="text-amber-dark text-[18px] shrink-0"
-          />
-          <p className="font-body-md text-body-md text-amber-dark">
-            <span className="font-bold">Debug hint:</span> {question.bugHint}
-          </p>
-        </div>
-      ) : null}
+      <div className="rounded-lg bg-amber-soft border border-amber-border p-space-sm flex gap-2 items-start">
+        <Icon
+          name="lightbulb"
+          className="text-amber-dark text-[18px] shrink-0"
+        />
+        <p className="font-body-md text-body-md text-amber-dark">
+          <span className="font-bold">Debug hint:</span>{" "}
+          {question.bugHints[language]}
+        </p>
+      </div>
     </div>
   );
 }

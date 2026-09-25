@@ -83,8 +83,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       ],
     },
     sampleCases: same("Name: Ajay\nAge: 20"),
-    bugHint:
-      "The constructor body references name and age without assigning them — use name = n; and age = a;.",
+    bugHints: {
+      "C++": "The constructor body references name and age without assigning them — use name = n; and age = a;.",
+      Python: "Assign the parameters inside __init__: self.name = name and self.age = age.",
+      Java: "Assign the parameters inside the constructor: this.name = n; and this.age = a;.",
+    },
   },
   {
     id: "debug-private-access",
@@ -147,8 +150,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       Python: [{ output: "5000" }],
       Java: [{ output: "5000.0" }],
     },
-    bugHint:
-      "Add a public accessor (for example getBalance()) and read through it instead of touching the private field directly.",
+    bugHints: {
+      "C++": "balance is private — add a public getter (double getBalance() { return balance; }) and print account.getBalance().",
+      Python: "__balance is name-mangled — keep it private and read it through a public accessor like get_balance().",
+      Java: "balance is private — add a public getter (double getBalance() { return balance; }) and print account.getBalance();",
+    },
   },
   {
     id: "debug-incorrect-method",
@@ -201,7 +207,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       ],
     },
     sampleCases: same("15"),
-    bugHint: "return a - b; computes the wrong operation — it should return a + b.",
+    bugHints: {
+      "C++": "return a - b; computes the difference — change it to return a + b;.",
+      Python: "return a - b computes the difference — change it to return a + b.",
+      Java: "return a - b; computes the difference — change it to return a + b;.",
+    },
   },
   {
     id: "debug-member-access",
@@ -257,8 +267,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       ],
     },
     sampleCases: same("Car started"),
-    bugHint:
-      "Check how the member is accessed: a C++ instance reached through a pointer needs -> (car->start()), while Python and Java need parentheses to actually call the method.",
+    bugHints: {
+      "C++": "car is a pointer — use the arrow operator: car->start();.",
+      Python: "car.start only references the method — call it: car.start().",
+      Java: "car.start is a bare reference — invoke it: car.start();",
+    },
   },
   {
     id: "debug-static-member",
@@ -324,8 +337,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       ],
     },
     sampleCases: same("3"),
-    bugHint:
-      "The shared counter never accumulates: C++ also needs a matching definition outside the class (int Counter::count = 0;), Python must increment the class attribute (Counter.count), and Java keeps overwriting it (count = 1).",
+    bugHints: {
+      "C++": "count is declared but never defined — add int Counter::count = 0; outside the class.",
+      Python: "self.count += 1 creates an instance attribute — increment the class attribute instead: Counter.count += 1.",
+      Java: "count = 1 resets the counter on every construction — increment it: count += 1;",
+    },
   },
   {
     id: "debug-cleanup-lifecycle",
@@ -385,8 +401,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       ],
     },
     sampleCases: same("Constructor\nDestructor"),
-    bugHint:
-      "A destructor/cleanup hook must not declare extra parameters — and a try-with-resources block requires the class to implement AutoCloseable with a public close().",
+    bugHints: {
+      "C++": "A destructor must not take parameters — declare it as ~Test().",
+      Python: "__del__ must take only self — remove the extra parameter.",
+      Java: "A try-with-resources block requires Test to implement AutoCloseable and for close() to be public.",
+    },
   },
   {
     id: "debug-inheritance-access",
@@ -466,8 +485,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       ],
     },
     sampleCases: same("50000"),
-    bugHint:
-      "salary is private to the base class. Expose it through a protected (or public) accessor in Employee and call that instead of reading the field directly.",
+    bugHints: {
+      "C++": "salary is private to Employee — add a protected or public accessor (e.g. int getSalary()) and use it in displaySalary().",
+      Python: "__salary is name-mangled to Employee — read it through a method the derived class can call (e.g. get_salary()).",
+      Java: "salary is private to Employee — add a protected/public getter (e.g. protected int getSalary()) and use it in displaySalary().",
+    },
   },
   {
     id: "debug-overriding",
@@ -545,8 +567,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       ],
     },
     sampleCases: same("Bark"),
-    bugHint:
-      "Ensure the call dispatches to the actual object: declare sound() virtual in C++, and in Python/Java invoke the method on the instance rather than on the base class.",
+    bugHints: {
+      "C++": "sound() is not virtual, so the call resolves to the base — declare virtual void sound() in Animal.",
+      Python: "Animal.sound(animal) forces the base implementation — call the method on the instance: animal.sound().",
+      Java: "sound() is invoked on the class instead of the object — call it on the instance: animal.sound();",
+    },
   },
   {
     id: "debug-object-slicing",
@@ -633,8 +658,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       ],
     },
     sampleCases: same("Drawing Circle"),
-    bugHint:
-      "Keep the original object: take the parameter by reference in C++ (void render(Shape& shape)), and in Python/Java use the received instance instead of creating or assigning a new base object.",
+    bugHints: {
+      "C++": "render(Shape shape) copies (slices) the Circle — take the caller's object by reference: void render(Shape& shape).",
+      Python: "render() replaces the passed object with a new Shape — remove shape = Shape() and call shape.draw().",
+      Java: "render() draws a brand-new Shape — drop the local temp and call shape.draw().",
+    },
   },
   {
     id: "debug-shallow-copy",
@@ -723,8 +751,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       Python: [{ output: "[90, 95, 88]\n[100, 95, 88]" }],
       Java: [{ output: "[90, 95, 88]\n[100, 95, 88]" }],
     },
-    bugHint:
-      "The copies share one payload: C++ needs a proper copy constructor (and copy assignment) for its dynamic member, while Python and Java must copy the list/array instead of aliasing the same reference.",
+    bugHints: {
+      "C++": "The implicit copy shares the pointer, so both objects delete it — implement a copy constructor that allocates its own int.",
+      Python: "s2 = s1 aliases the same object — make an independent copy, e.g. Student(s1.marks.copy()).",
+      Java: "s2 and s1 reference the same array — copy it, e.g. assign marks.clone() in the constructor.",
+    },
   },
   {
     id: "debug-polymorphic-cleanup",
@@ -831,8 +862,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       ],
     },
     sampleCases: same("Resource acquired\nFile opened\nFile closed\nResource released"),
-    bugHint:
-      "Make the C++ base destructor virtual so deleting through the base pointer reaches the derived destructor; in Python/Java, invoke cleanup on the actual object passed in rather than on a freshly created base instance.",
+    bugHints: {
+      "C++": "Deleting through the base pointer skips FileResource's destructor — declare the base destructor virtual.",
+      Python: "Resource.cleanup(resource) calls the base directly — invoke resource.cleanup() instead.",
+      Java: "destroy() cleans a brand-new Resource — call resource.cleanup() on the object passed in.",
+    },
   },
   {
     id: "debug-diamond",
@@ -934,8 +968,11 @@ export const DEBUG_QUESTIONS: DebugQuestion[] = [
       Python: [{ output: "ID: 100" }],
       Java: [{ output: "Teaching Assistant" }],
     },
-    bugHint:
-      "Collapse the two base branches into a single shared one: use virtual inheritance in C++ (class Student : virtual public Person), cooperative super() in Python, and in Java override role() in TeachingAssistant to resolve the two default methods.",
+    bugHints: {
+      "C++": "The id is ambiguous because two Person sub-objects exist — use virtual inheritance: class Student : virtual public Person (and same for Employee).",
+      Python: "Person.__init__ runs twice — use cooperative super(): def __init__(self): super().__init__().",
+      Java: "role() is ambiguous from both interfaces — override it in TeachingAssistant and print \"Teaching Assistant\".",
+    },
   },
 ];
 
