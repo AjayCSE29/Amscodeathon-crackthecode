@@ -26,10 +26,8 @@ export interface DebugQuestion {
 }
 
 export interface Candidate {
-  name: string;
-  institution: string;
-  registrationId: string;
-  department: string;
+  teamName: string;
+  password: string;
 }
 
 export type CodeTokenType =
@@ -122,9 +120,4 @@ export interface ProctorEvent {
 
 export type CameraStatus = "unknown" | "ready" | "denied" | "unavailable";
 
-export type InputField =
-  | "name"
-  | "institution"
-  | "registrationId"
-  | "department"
-  | "consent";
+export type InputField = "teamName" | "password";

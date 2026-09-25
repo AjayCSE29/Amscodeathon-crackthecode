@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CandidateForm } from "../components/entry/CandidateForm";
 import { AssessmentLayout } from "../components/layout/AssessmentLayout";
 import { AppHeader } from "../components/layout/AppHeader";
-import { useProctoring } from "../hooks/useProctoring";
+import { requestFullscreen } from "../lib/fullscreen";
 import type { Candidate } from "../types/assessment";
 
 interface EntryPageProps {
@@ -12,10 +12,10 @@ interface EntryPageProps {
 
 export function EntryPage({ onContinue, initialName = "" }: EntryPageProps) {
   const [typedName, setTypedName] = useState(initialName);
-  const proctor = useProctoring(false);
 
   const handleContinue = (candidate: Candidate) => {
-    setTypedName(candidate.name);
+    requestFullscreen();
+    setTypedName(candidate.teamName);
     onContinue(candidate);
   };
 
@@ -24,7 +24,7 @@ export function EntryPage({ onContinue, initialName = "" }: EntryPageProps) {
       header={
         <AppHeader
           mode="entry"
-          candidateName={typedName || "Candidate"}
+          candidateName={typedName || "Team"}
         />
       }
       className="bg-background flex-1 flex items-center justify-center py-10 md:py-16"
@@ -36,7 +36,7 @@ export function EntryPage({ onContinue, initialName = "" }: EntryPageProps) {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-sm bg-primary" aria-hidden="true" />
                 <span className="font-label-sm text-label-sm font-semibold uppercase text-primary tracking-wider">
-                  Candidate Terminal
+                  Team Terminal
                 </span>
               </div>
               <span className="font-label-sm text-label-sm bg-surface-container-high px-2 py-0.5 rounded text-on-surface-variant font-mono">
@@ -47,17 +47,12 @@ export function EntryPage({ onContinue, initialName = "" }: EntryPageProps) {
               Enter Competition
             </h2>
             <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-              Enter your verified candidate credentials to initialize the
-              proctored assessment.
+              Enter your team access details to initialize the proctored
+              assessment.
             </p>
           </div>
 
-          <CandidateForm
-            onContinue={handleContinue}
-            initialName={initialName}
-            cameraStatus={proctor.cameraStatus}
-            onVerifyCamera={proctor.requestCameraVerification}
-          />
+          <CandidateForm onContinue={handleContinue} initialName={initialName} />
         </div>
       </div>
     </AssessmentLayout>

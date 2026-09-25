@@ -1,8 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AppHeader } from "./components/layout/AppHeader";
 import { AssessmentLayout } from "./components/layout/AssessmentLayout";
+import { FullscreenWarning } from "./components/layout/FullscreenWarning";
+import { MobileBlockScreen } from "./components/layout/MobileBlockScreen";
+import { TimeOverScreen } from "./components/layout/TimeOverScreen";
 import { Icon } from "./components/ui/Icon";
 import { useAssessment } from "./hooks/useAssessment";
+import { useIsMobile } from "./hooks/useIsMobile";
+import {
+  FULLSCREEN_GRACE_MS,
+  useFullscreenGuard,
+} from "./hooks/useFullscreenGuard";
+import { requestFullscreen } from "./lib/fullscreen";
 import { AssessmentPage } from "./pages/AssessmentPage";
 import { DebugPage } from "./pages/DebugPage";
 import { EntryPage } from "./pages/EntryPage";
@@ -11,7 +20,7 @@ import { SubmissionPage } from "./pages/SubmissionPage";
 function RestoreError({ onReset }: { onReset: () => void }) {
   return (
     <AssessmentLayout
-      header={<AppHeader mode="entry" candidateName="Candidate" />}
+      header={<AppHeader mode="entry" candidateName="Team" />}
       className="bg-background flex-1 flex items-center justify-center py-10"
     >
       <div className="w-full max-w-md mx-auto px-margin-mobile md:px-margin">
@@ -43,6 +52,19 @@ function RestoreError({ onReset }: { onReset: () => void }) {
 export default function App() {
   const api = useAssessment();
   const { session, restoreProblem, finalizeExpired } = api;
+  const isMobile = useIsMobile();
+  const [disconnected, setDisconnected] = useState(false);
+
+  const handleBreach = () => {
+    api.resetToEntry();
+    setDisconnected(true);
+  };
+
+  const guard = useFullscreenGuard(
+    session?.status === "active" || session?.status === "round2",
+    FULLSCREEN_GRACE_MS,
+    handleBreach,
+  );
 
   useEffect(() => {
     if (session?.status === "active" && Date.now() >= session.expiresAt) {
@@ -57,7 +79,13 @@ export default function App() {
     }
   }, [session?.status, session?.expiresAt, session?.round2ExpiresAt, finalizeExpired]);
 
+  if (isMobile) return <MobileBlockScreen />;
+
   if (restoreProblem) return <RestoreError onReset={api.resetToEntry} />;
+
+  if (disconnected) {
+    return <TimeOverScreen onRestart={() => setDisconnected(false)} />;
+  }
 
   if (session?.status === "round1-submitted") {
     return (
@@ -65,7 +93,10 @@ export default function App() {
         session={session}
         totalQuestions={api.totalQuestions}
         stage="round1"
-        onProceed={api.proceedToRound2}
+        onProceed={() => {
+          requestFullscreen();
+          api.proceedToRound2();
+        }}
       />
     );
   }
@@ -81,11 +112,25 @@ export default function App() {
   }
 
   if (session?.status === "active") {
-    return <AssessmentPage api={api} />;
+    return (
+      <>
+        {guard.warning ? (
+          <FullscreenWarning remainingMs={guard.remainingMs} />
+        ) : null}
+        <AssessmentPage api={api} />
+      </>
+    );
   }
 
   if (session?.status === "round2") {
-    return <DebugPage api={api} />;
+    return (
+      <>
+        {guard.warning ? (
+          <FullscreenWarning remainingMs={guard.remainingMs} />
+        ) : null}
+        <DebugPage api={api} />
+      </>
+    );
   }
 
   return <EntryPage onContinue={api.startAssessment} />;

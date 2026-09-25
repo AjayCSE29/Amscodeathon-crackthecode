@@ -63,11 +63,11 @@ export function SubmissionConfirmation({
               <div className="w-full bg-surface-container-low rounded-lg p-space-md space-y-space-sm mb-space-lg">
                 <div className="flex items-center justify-between">
                   <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
-                    Candidate
+                    Team Name
                   </span>
                   <div className="text-right">
                     <span className="font-body-md text-body-md font-semibold text-on-surface">
-                      {session.candidate.name}
+                      {session.candidate.teamName}
                     </span>
                   </div>
                 </div>

@@ -192,7 +192,7 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
       header={
         <AppHeader
           mode="active"
-          candidateName={session.candidate.name}
+          candidateName={session.candidate.teamName}
           statusLabel="In Progress"
           timeLabel={formatHMS(timer.remainingMs)}
           timerTier={timer.expired ? "critical" : timer.tier}

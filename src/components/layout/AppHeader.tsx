@@ -51,7 +51,7 @@ export function AppHeader({
 
           <div className="hidden md:flex flex-col items-end text-right">
             <span className="font-body-md text-body-md font-semibold text-on-surface leading-tight">
-              {candidateName || "Candidate"}
+              {candidateName || "Team"}
             </span>
           </div>
 

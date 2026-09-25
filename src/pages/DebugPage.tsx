@@ -183,7 +183,7 @@ export function DebugPage({ api }: DebugPageProps) {
       header={
         <AppHeader
           mode="active"
-          candidateName={session.candidate.name}
+          candidateName={session.candidate.teamName}
           timeLabel={formatHMS(timer.remainingMs)}
           timerTier={timer.expired ? "critical" : timer.tier}
           actions={
