@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CodeEditor } from "../components/debug/CodeEditor";
 import { DebugControls } from "../components/debug/DebugControls";
 import { DebugSubmitModal } from "../components/debug/DebugSubmitModal";
@@ -20,23 +20,29 @@ import type { DebugProgramLanguage, DebugQuestion } from "../types/assessment";
 const FILE_NAMES: Record<DebugProgramLanguage, string> = {
   "C++": "solution.cpp",
   Python: "solution.py",
-  Java: "Solution.java",
+  Java: "Main.java",
 };
+
+function buildCommand(language: DebugProgramLanguage): string {
+  return language === "C++"
+    ? "g++ -std=c++17 solution.cpp -o solution && ./solution"
+    : language === "Python"
+      ? "python3 solution.py"
+      : "javac Main.java && java Main";
+}
 
 function buildTranscript(
   question: DebugQuestion,
   language: DebugProgramLanguage,
 ): TerminalEntry[] {
-  const command =
-    language === "C++"
-      ? "g++ -std=c++17 solution.cpp -o solution && ./solution"
-      : language === "Python"
-        ? "python3 solution.py"
-        : "javac Solution.java && java Solution";
-  const entries: TerminalEntry[] = [{ kind: "command", text: command }];
-  question.sampleCases.forEach((sample, i) => {
-    entries.push({ kind: "system", text: `Sample ${i + 1} input` });
-    entries.push({ kind: "input", text: sample.input });
+  const entries: TerminalEntry[] = [
+    { kind: "command", text: buildCommand(language) },
+  ];
+  question.sampleCases[language].forEach((sample, i) => {
+    if (sample.input) {
+      entries.push({ kind: "system", text: `Sample ${i + 1} input` });
+      entries.push({ kind: "input", text: sample.input });
+    }
     entries.push({ kind: "system", text: `Sample ${i + 1} output` });
     entries.push({ kind: "output", text: sample.output });
   });
@@ -62,8 +68,27 @@ export function DebugPage({ api }: DebugPageProps) {
 
   const [submitOpen, setSubmitOpen] = useState(false);
   const [outputs, setOutputs] = useState<Record<string, TerminalEntry[]>>({});
+  const [view, setView] = useState<"editor" | "terminal">("editor");
+  const [running, setRunning] = useState(false);
+  const runTimerRef = useRef<number | null>(null);
 
   const language = session?.debugLanguage ?? "C++";
+
+  const cancelPendingRun = useCallback(() => {
+    if (runTimerRef.current !== null) {
+      window.clearTimeout(runTimerRef.current);
+      runTimerRef.current = null;
+    }
+    setRunning(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (runTimerRef.current !== null) {
+        window.clearTimeout(runTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleExpire = useCallback(() => {
     finalizeExpired();
@@ -77,14 +102,47 @@ export function DebugPage({ api }: DebugPageProps) {
   const run = useCallback(() => {
     if (!currentDebugQuestion) return;
     const currentLanguage = session?.debugLanguage ?? "C++";
-    setOutputs((prev) => ({
-      ...prev,
-      [`${currentDebugQuestion.id}:${currentLanguage}`]: buildTranscript(
-        currentDebugQuestion,
-        currentLanguage,
-      ),
-    }));
-  }, [currentDebugQuestion, session?.debugLanguage]);
+    const question = currentDebugQuestion;
+    cancelPendingRun();
+    setView("terminal");
+    setRunning(true);
+    runTimerRef.current = window.setTimeout(() => {
+      runTimerRef.current = null;
+      setOutputs((prev) => ({
+        ...prev,
+        [`${question.id}:${currentLanguage}`]: buildTranscript(
+          question,
+          currentLanguage,
+        ),
+      }));
+      setRunning(false);
+    }, 700);
+  }, [currentDebugQuestion, session?.debugLanguage, cancelPendingRun]);
+
+  const goEditor = useCallback(() => {
+    cancelPendingRun();
+    setView("editor");
+  }, [cancelPendingRun]);
+
+  const handleNavigate = useCallback(
+    (index: number) => {
+      cancelPendingRun();
+      setView("editor");
+      navigateDebug(index + 1);
+    },
+    [cancelPendingRun, navigateDebug],
+  );
+
+  const handleLanguageChange = useCallback(
+    (next: DebugProgramLanguage) => {
+      if (next !== language) {
+        cancelPendingRun();
+        setView("editor");
+      }
+      setDebugLanguage(next);
+    },
+    [language, cancelPendingRun, setDebugLanguage],
+  );
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -129,7 +187,7 @@ export function DebugPage({ api }: DebugPageProps) {
           timeLabel={formatHMS(timer.remainingMs)}
           timerTier={timer.expired ? "critical" : timer.tier}
           actions={
-            <LanguageToggle value={language} onChange={setDebugLanguage} />
+            <LanguageToggle value={language} onChange={handleLanguageChange} />
           }
         />
       }
@@ -151,14 +209,14 @@ export function DebugPage({ api }: DebugPageProps) {
             </span>
             <LanguageToggle
               value={language}
-              onChange={setDebugLanguage}
+              onChange={handleLanguageChange}
               className="md:hidden"
             />
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-start">
           <aside className="lg:col-span-4 flex flex-col gap-space-md">
-            <ProblemPanel question={question} />
+            <ProblemPanel question={question} language={language} />
           </aside>
 
           <main className="lg:col-span-8 flex flex-col gap-space-md lg:h-[calc(100vh-7rem)] lg:min-h-[620px] min-h-0">
@@ -166,23 +224,29 @@ export function DebugPage({ api }: DebugPageProps) {
               questions={DEBUG_QUESTIONS}
               currentIndex={question.index - 1}
               editedIds={editedIds}
-              onNavigate={(i) => navigateDebug(i + 1)}
+              onNavigate={handleNavigate}
               onRun={run}
               onReset={() => resetCode(question.id)}
               onSubmit={() => setSubmitOpen(true)}
               disabled={!editable}
             />
-            <CodeEditor
-              fileName={FILE_NAMES[language]}
-              value={codeValue}
-              onChange={(code) => setCode(question.id, code)}
-              readOnly={!editable}
-              className="flex-1 min-h-[360px]"
-            />
-            <OutputTerminal
-              entries={entries}
-              className="h-[240px] shrink-0"
-            />
+            {view === "terminal" ? (
+              <OutputTerminal
+                entries={entries}
+                onBack={goEditor}
+                running={running}
+                runningCommand={buildCommand(language)}
+                className="flex-1 min-h-[360px]"
+              />
+            ) : (
+              <CodeEditor
+                fileName={FILE_NAMES[language]}
+                value={codeValue}
+                onChange={(code) => setCode(question.id, code)}
+                readOnly={!editable}
+                className="flex-1 min-h-[360px]"
+              />
+            )}
           </main>
         </div>
       </div>

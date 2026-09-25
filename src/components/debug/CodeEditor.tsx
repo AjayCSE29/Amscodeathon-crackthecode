@@ -113,7 +113,7 @@ export function CodeEditor({
         <pre
           ref={preRef}
           aria-hidden="true"
-          className="absolute inset-0 m-0 overflow-auto scrollbar-hide pt-4 pr-4 pb-4 pl-14 font-code-body text-code-body leading-6 whitespace-pre select-none pointer-events-none"
+          className="absolute inset-0 m-0 overflow-auto scrollbar-hide pt-4 pr-4 pb-4 pl-4 font-code-body text-code-body leading-6 whitespace-pre select-none pointer-events-none"
         >
           {lines.map(renderLine)}
         </pre>

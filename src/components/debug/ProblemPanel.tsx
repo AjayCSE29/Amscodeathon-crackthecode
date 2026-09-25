@@ -1,10 +1,11 @@
 import { richText } from "../../lib/richText";
 import { cn } from "../../lib/utils";
-import type { DebugQuestion } from "../../types/assessment";
+import type { DebugProgramLanguage, DebugQuestion } from "../../types/assessment";
 import { Icon } from "../ui/Icon";
 
 interface ProblemPanelProps {
   question: DebugQuestion;
+  language: DebugProgramLanguage;
   className?: string;
 }
 
@@ -14,7 +15,8 @@ const difficultyClass: Record<DebugQuestion["difficulty"], string> = {
   Hard: "bg-error text-on-error",
 };
 
-export function ProblemPanel({ question, className }: ProblemPanelProps) {
+export function ProblemPanel({ question, language, className }: ProblemPanelProps) {
+  const sampleCases = question.sampleCases[language];
   return (
     <div
       className={cn(
@@ -48,7 +50,7 @@ export function ProblemPanel({ question, className }: ProblemPanelProps) {
       </p>
 
       <div className="flex flex-col divide-y divide-outline-variant/50">
-        {question.sampleCases.map((sample, i) => (
+        {sampleCases.map((sample, i) => (
           <div
             key={i}
             className="flex flex-col gap-1 py-space-sm first:pt-0 last:pb-0"
@@ -57,14 +59,16 @@ export function ProblemPanel({ question, className }: ProblemPanelProps) {
               Sample {i + 1}
             </span>
             <div className="flex flex-col sm:flex-row gap-space-sm">
-              <div className="flex-1 min-w-0">
-                <span className="font-code-inline text-code-inline uppercase tracking-wider text-terminal-muted">
-                  Input
-                </span>
-                <pre className="mt-1 rounded-md bg-terminal p-2 font-code-body text-code-body text-inverse-on-surface leading-5 whitespace-pre-wrap break-words">
-                  {sample.input}
-                </pre>
-              </div>
+              {sample.input ? (
+                <div className="flex-1 min-w-0">
+                  <span className="font-code-inline text-code-inline uppercase tracking-wider text-terminal-muted">
+                    Input
+                  </span>
+                  <pre className="mt-1 rounded-md bg-terminal p-2 font-code-body text-code-body text-inverse-on-surface leading-5 whitespace-pre-wrap break-words">
+                    {sample.input}
+                  </pre>
+                </div>
+              ) : null}
               <div className="flex-1 min-w-0">
                 <span className="font-code-inline text-code-inline uppercase tracking-wider text-terminal-muted">
                   Output

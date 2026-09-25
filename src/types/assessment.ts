@@ -10,7 +10,7 @@ export type DebugProgramLanguage = "C++" | "Python" | "Java";
 export type DebugDifficulty = "Easy" | "Medium" | "Hard";
 
 export interface DebugCase {
-  input: string;
+  input?: string;
   output: string;
 }
 
@@ -21,7 +21,7 @@ export interface DebugQuestion {
   difficulty: DebugDifficulty;
   statement: string;
   starters: Record<DebugProgramLanguage, string[]>;
-  sampleCases: DebugCase[];
+  sampleCases: Record<DebugProgramLanguage, DebugCase[]>;
   bugHint?: string;
 }
 
