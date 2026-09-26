@@ -7,10 +7,9 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const DIST_DIR = join(__dirname, "..", "dist");
 
 const PORT = Number(process.env.PORT ?? 8787);
-const PISTON_URL = (process.env.PISTON_URL ?? "http://127.0.0.1:2000").replace(
-  /\/+$/,
-  "",
-);
+const PISTON_URL = (
+  process.env.PISTON_URL ?? "http://127.0.0.1:2000/api/v2"
+).replace(/\/+$/, "");
 const RUN_TIMEOUT_MS = Number(process.env.RUN_TIMEOUT_MS ?? 10_000);
 const QUEUE_TIMEOUT_MS = Number(process.env.QUEUE_TIMEOUT_MS ?? 30_000);
 const MAX_CONCURRENCY = Number(process.env.MAX_CONCURRENCY ?? 8);

@@ -4,11 +4,6 @@ import type { TimerState } from "../types/assessment";
 const LOW_MS = 10 * 60 * 1000;
 const CRITICAL_MS = 5 * 60 * 1000;
 
-export const TIMER_TIER = {
-  LOW: LOW_MS,
-  CRITICAL: CRITICAL_MS,
-} as const;
-
 /**
  * Frontend-only countdown derived from a persisted expiration timestamp.
  * The authoritative time source is `Date.now()` against `expiresAt`, so a

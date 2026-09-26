@@ -1097,10 +1097,3 @@ export const MOCK_QUESTIONS: Question[] = [
 export const TOTAL_QUESTIONS = MOCK_QUESTIONS.length;
 
 export const ASSESSMENT_DURATION_MS = 45 * 60 * 1000;
-
-export const DEPARTMENT_OPTIONS = [
-  { value: "cs", label: "Computer Science & Engineering" },
-  { value: "it", label: "Information Technology & Software Systems" },
-  { value: "ai_ds", label: "Artificial Intelligence & Data Science" },
-  { value: "ece", label: "Electronics & Communication Engineering" },
-] as const;
