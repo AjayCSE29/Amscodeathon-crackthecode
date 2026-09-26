@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { DEPARTMENT_OPTIONS } from "../../data/mockQuestions";
 import { cn } from "../../lib/utils";
+import { getUsers } from "../../lib/userStore";
 import type { Candidate } from "../../types/assessment";
 import { Icon } from "../ui/Icon";
 import { ConsentPanel } from "./ConsentPanel";
@@ -29,36 +29,38 @@ interface FieldDef {
   tagClass: string;
   placeholder: string;
   mono?: boolean;
+  type?: string;
 }
 
 const FIELDS: FieldDef[] = [
   {
     key: "name",
-    name: "fullName",
-    label: "Candidate Full Name",
-    icon: "badge",
-    tag: "MATCH_GOV_ID",
+    name: "userId",
+    label: "User ID",
+    icon: "person",
+    tag: "REQUIRED",
     tagClass: "text-primary font-semibold",
-    placeholder: "e.g. Arjun Sharma",
+    placeholder: "e.g. USER-1234",
   },
   {
     key: "institution",
-    name: "institution",
-    label: "College / Institution",
-    icon: "account_balance",
-    tag: "AFFILIATED",
+    name: "teamName",
+    label: "Team Name",
+    icon: "groups",
+    tag: "REQUIRED",
     tagClass: "text-outline-variant",
-    placeholder: "e.g. Indian Institute of Technology / National Engineering College",
+    placeholder: "e.g. Code Ninjas",
   },
   {
     key: "registrationId",
-    name: "regId",
-    label: "Registration ID / Roll Number",
-    icon: "pin",
-    tag: "VERIFIED",
+    name: "password",
+    label: "Password",
+    icon: "lock",
+    tag: "SECURE",
     tagClass: "text-tertiary",
-    placeholder: "e.g. AMS2026-0142",
+    placeholder: "Enter password",
     mono: true,
+    type: "password",
   },
 ];
 
@@ -67,10 +69,28 @@ function validate(
   consent: boolean,
 ): FieldErrors {
   const errors: FieldErrors = {};
-  if (!values.name.trim()) errors.name = "Candidate name is required.";
-  if (!values.institution.trim()) errors.institution = "College / Institution is required.";
-  if (!values.registrationId.trim()) errors.registrationId = "Registration ID is required.";
+  if (!values.name.trim()) errors.name = "User ID is required.";
+  if (!values.institution.trim()) errors.institution = "Team Name is required.";
+  if (!values.registrationId.trim()) errors.registrationId = "Password is required.";
   if (!consent) errors.consent = "You must confirm the assessment conditions before continuing.";
+  
+  if (Object.keys(errors).length === 0 && values.name && values.institution && values.registrationId) {
+    const users = getUsers();
+    const user = users.find(u => 
+      u.userId === values.name.trim() && 
+      u.teamName === values.institution.trim() && 
+      u.password === values.registrationId.trim()
+    );
+
+    if (!user) {
+      errors.name = "Invalid credentials.";
+      errors.institution = "Invalid credentials.";
+      errors.registrationId = "Invalid credentials.";
+    } else if (!user.isActive) {
+      errors.name = "This account is currently disabled.";
+    }
+  }
+  
   return errors;
 }
 
@@ -84,7 +104,6 @@ export function CandidateForm({
   const [name, setName] = useState(initialName);
   const [institution, setInstitution] = useState("");
   const [registrationId, setRegistrationId] = useState("");
-  const [department, setDepartment] = useState<string>(DEPARTMENT_OPTIONS[0].value);
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [attempted, setAttempted] = useState(false);
@@ -113,7 +132,7 @@ export function CandidateForm({
       name: name.trim(),
       institution: institution.trim(),
       registrationId: registrationId.trim(),
-      department: DEPARTMENT_OPTIONS.find((d) => d.value === department)?.label ?? "",
+      department: "N/A",
     });
   };
 
@@ -168,7 +187,7 @@ export function CandidateForm({
               <input
                 id={field.name}
                 name={field.name}
-                type="text"
+                type={field.type || "text"}
                 value={value}
                 onChange={(e) => {
                   setValue(e.target.value);
@@ -196,41 +215,6 @@ export function CandidateForm({
           </div>
         );
       })}
-
-      <div className="space-y-1.5">
-        <div className="flex justify-between items-center">
-          <label
-            className="font-label-md text-label-md text-on-surface uppercase tracking-wide"
-            htmlFor="department"
-          >
-            Department / Domain
-          </label>
-          <span className="font-label-sm text-label-sm font-mono text-outline-variant">
-            SPECIALIZATION
-          </span>
-        </div>
-        <div className="relative flex items-center">
-          <span className="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-lg pointer-events-none">
-            memory
-          </span>
-          <select
-            id="department"
-            name="department"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            className="w-full pl-11 pr-10 py-2.5 bg-surface rounded-lg text-on-surface font-body-md text-body-md appearance-none focus:outline-none focus:bg-surface-container-lowest transition-colors cursor-pointer shadow-inner border border-transparent focus:border-outline-variant/60"
-          >
-            {DEPARTMENT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <span className="material-symbols-outlined absolute right-3 text-on-surface-variant text-lg pointer-events-none">
-            arrow_drop_down
-          </span>
-        </div>
-      </div>
 
       <ConsentPanel
         checked={consent}

@@ -114,10 +114,16 @@ function getCounts(session: AssessmentSession | null, total: number): Assessment
 export function useAssessment(): UseAssessmentApi {
   const [initial] = useState(() => {
     const loaded = storage.loadSession();
-    if (loaded.ok) return { session: loaded.data, restoreProblem: false };
+    if (loaded.ok) {
+      if (loaded.data.status === "submitted") {
+        storage.clearSession();
+        return { session: null, restoreProblem: false };
+      }
+      return { session: loaded.data, restoreProblem: false };
+    }
     return {
       session: null,
-      restoreProblem: !loaded.ok && loaded.reason === "corrupt",
+      restoreProblem: !loaded.ok && (loaded as any).reason === "corrupt",
     };
   });
 
@@ -256,30 +262,130 @@ export function useAssessment(): UseAssessmentApi {
   }, []);
 
   const submitAssessment = useCallback((round: 1 | 2) => {
+    if (!session) return;
+    
     if (round === 1) {
-      setSession((prev) => {
-        if (!prev || prev.status !== "active") return prev;
-        const next = {
-          ...prev,
-          status: "round1-submitted" as const,
-          submittedAt: Date.now(),
+      if (session.status !== "active") return;
+        
+      let correct = 0;
+      let wrong = 0;
+      let notAttended = 0;
+      let review = 0;
+      
+      const questionDetails = MOCK_QUESTIONS.map(q => {
+        const ans = session.responses[q.id];
+        const isReview = session.reviewFlags[q.id];
+        if (isReview) review++;
+        
+        let status = 'not_attended';
+        if (!ans) notAttended++;
+        else if (ans === q.correctOptionId) { correct++; status = 'correct'; }
+        else { wrong++; status = 'wrong'; }
+        
+        return {
+          questionId: q.id,
+          index: q.index,
+          status,
+          isReview,
+          selected: ans,
+          correctOption: q.correctOptionId
         };
-        commit(next);
-        return next;
       });
-      return;
-    }
-    setSession((prev) => {
-      if (!prev || prev.status !== "round2") return prev;
+      
       const next = {
-        ...prev,
-        status: "submitted" as const,
+        ...session,
+        status: "round1-submitted" as const,
         submittedAt: Date.now(),
       };
+      
+      try {
+        const submissions = JSON.parse(localStorage.getItem('amscodeathon_submissions_r1') || '[]');
+        const exists = submissions.find((s: any) => s.sessionId === session.sessionId);
+        if (!exists) {
+          submissions.push({
+            sessionId: session.sessionId,
+            userId: session.candidate.name,
+            teamName: session.candidate.institution,
+            correct,
+            wrong,
+            notAttended,
+            review,
+            questionDetails,
+            submittedAt: next.submittedAt
+          });
+          localStorage.setItem('amscodeathon_submissions_r1', JSON.stringify(submissions));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      setSession(next);
       commit(next);
-      return next;
+      return;
+    }
+    
+    if (session.status !== "round2") return;
+      
+    let correct = 0;
+    let wrong = 0;
+    let notAttended = 0;
+    
+    const languages: ("C++" | "Python" | "Java")[] = ["C++", "Python", "Java"];
+    const questionDetails = DEBUG_QUESTIONS.flatMap(q => {
+       return languages.map(lang => {
+         const key = `${q.id}:${lang}`;
+         const edit = session.codeEdits[key];
+         const initial = plainCode(q.starters[lang]);
+         
+         let status = 'not_attended';
+         if (!edit || edit === initial) {
+            notAttended++;
+         } else {
+            correct++;
+            status = 'correct'; // For demo, consider edited code as correct
+         }
+         
+         return {
+            questionId: q.id,
+            language: lang,
+            index: q.index,
+            status,
+            title: q.title,
+            submittedCode: edit || initial,
+            initialCode: initial
+         };
+       });
     });
-  }, []);
+    
+    const next = {
+      ...session,
+      status: "submitted" as const,
+      submittedAt: Date.now(),
+    };
+    
+    try {
+      const submissions = JSON.parse(localStorage.getItem('amscodeathon_submissions_r2') || '[]');
+      const exists = submissions.find((s: any) => s.sessionId === session.sessionId);
+      if (!exists) {
+        submissions.push({
+          sessionId: session.sessionId,
+          userId: session.candidate.name,
+          teamName: session.candidate.institution,
+          correct,
+          wrong,
+          notAttended,
+          questionDetails,
+          submittedAt: next.submittedAt
+        });
+        localStorage.setItem('amscodeathon_submissions_r2', JSON.stringify(submissions));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    setSession(next);
+    commit(next);
+  }, [session]);
 
   const setCode = useCallback((questionId: string, code: string) => {
     setSession((prev) => {
