@@ -88,6 +88,7 @@ export interface AssessmentSession {
   currentDebug: number;
   codeEdits: Record<string, string>;
   debugLanguage: DebugProgramLanguage;
+  hintReveals: Record<string, boolean>;
 }
 
 export interface QuestionState {
@@ -104,20 +105,3 @@ export interface TimerState {
   expired: boolean;
 }
 
-export type ProctorEventType =
-  | "TAB_HIDDEN"
-  | "TAB_VISIBLE"
-  | "WINDOW_BLUR"
-  | "WINDOW_FOCUS"
-  | "FULLSCREEN_EXIT"
-  | "CAMERA_DENIED"
-  | "CAMERA_GRANTED";
-
-export interface ProctorEvent {
-  type: ProctorEventType;
-  timestamp: number;
-}
-
-export type CameraStatus = "unknown" | "ready" | "denied" | "unavailable";
-
-export type InputField = "teamName" | "password";

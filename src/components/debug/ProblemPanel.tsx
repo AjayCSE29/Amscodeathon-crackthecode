@@ -1,11 +1,14 @@
 import { richText } from "../../lib/richText";
 import { cn } from "../../lib/utils";
 import type { DebugProgramLanguage, DebugQuestion } from "../../types/assessment";
+import { EyeOffIcon } from "../ui/EyeOffIcon";
 import { Icon } from "../ui/Icon";
 
 interface ProblemPanelProps {
   question: DebugQuestion;
   language: DebugProgramLanguage;
+  hintRevealed: boolean;
+  onRevealHint: () => void;
   className?: string;
 }
 
@@ -15,7 +18,13 @@ const difficultyClass: Record<DebugQuestion["difficulty"], string> = {
   Hard: "bg-error text-on-error",
 };
 
-export function ProblemPanel({ question, language, className }: ProblemPanelProps) {
+export function ProblemPanel({
+  question,
+  language,
+  hintRevealed,
+  onRevealHint,
+  className,
+}: ProblemPanelProps) {
   const sampleCases = question.sampleCases[language];
   return (
     <div
@@ -82,15 +91,39 @@ export function ProblemPanel({ question, language, className }: ProblemPanelProp
         ))}
       </div>
 
-      <div className="rounded-lg bg-amber-soft border border-amber-border p-space-sm flex gap-2 items-start">
+      <div className="relative rounded-lg bg-amber-soft border border-amber-border p-space-sm flex gap-2 items-start">
         <Icon
           name="lightbulb"
           className="text-amber-dark text-[18px] shrink-0"
         />
-        <p className="font-body-md text-body-md text-amber-dark">
-          <span className="font-bold">Debug hint:</span>{" "}
-          {question.bugHints[language]}
-        </p>
+        <div className="min-w-0 flex-1">
+          <p
+            className={cn(
+              "font-body-md text-body-md text-amber-dark",
+              !hintRevealed && "blur-lg select-none pointer-events-none",
+            )}
+          >
+            <span className="font-bold">Debug hint:</span>{" "}
+            {question.bugHints[language]}
+          </p>
+        </div>
+
+        {!hintRevealed ? (
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 p-space-sm">
+            <button
+              type="button"
+              onClick={onRevealHint}
+              aria-label="Reveal the debug hint for this problem"
+              className="pointer-events-auto flex items-center gap-1.5 bg-amber-dark hover:bg-amber text-white px-space-md py-1.5 rounded-lg font-label-md text-label-md font-bold transition-colors cursor-pointer"
+            >
+              <EyeOffIcon className="text-[16px]" />
+              <span>Show Hint</span>
+            </button>
+            <span className="bg-amber-soft px-2 py-0.5 rounded font-label-sm text-label-sm text-amber-dark/80">
+              You will lose 2 points
+            </span>
+          </div>
+        ) : null}
       </div>
     </div>
   );

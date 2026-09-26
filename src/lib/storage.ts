@@ -1,11 +1,10 @@
-import type { AssessmentSession, OptionId, ProctorEvent } from "../types/assessment";
+import type { AssessmentSession, OptionId } from "../types/assessment";
 
 const SESSION_KEY = "codeathon_session";
 const ANSWERS_KEY = "codeathon_answers";
 const FLAGS_KEY = "codeathon_flags";
 const VISITED_KEY = "codeathon_visited";
 const CODE_EDITS_KEY = "codeathon_code_edits";
-const PROCTOR_KEY = "codeathon_proctor_events";
 
 export interface StorageFailure {
   ok: false;
@@ -71,7 +70,9 @@ export function isSessionLike(value: unknown): value is AssessmentSession {
     (s.debugLanguage === undefined ||
       s.debugLanguage === "C++" ||
       s.debugLanguage === "Python" ||
-      s.debugLanguage === "Java")
+      s.debugLanguage === "Java") &&
+    (s.hintReveals === undefined ||
+      (typeof s.hintReveals === "object" && s.hintReveals !== null))
   );
 }
 
@@ -87,14 +88,11 @@ function withRound2Defaults(value: AssessmentSession): AssessmentSession {
     currentDebug: value.currentDebug ?? 1,
     codeEdits,
     debugLanguage: value.debugLanguage ?? "C++",
+    hintReveals: value.hintReveals ?? {},
   };
 }
 
 export type LoadResult<T> = { ok: true; data: T } | StorageFailure;
-
-export function isValidOptionId(value: unknown): value is OptionId {
-  return value === "A" || value === "B" || value === "C" || value === "D";
-}
 
 /** Single storage abstraction for the local assessment session. */
 export const storage = {
@@ -133,26 +131,5 @@ export const storage = {
     removeRaw(FLAGS_KEY);
     removeRaw(VISITED_KEY);
     removeRaw(CODE_EDITS_KEY);
-    removeRaw(PROCTOR_KEY);
-  },
-
-  loadProctorEvents(): ProctorEvent[] {
-    const data = readRaw(PROCTOR_KEY);
-    if (!Array.isArray(data)) return [];
-    return data.filter(
-      (e): e is ProctorEvent =>
-        typeof e === "object" &&
-        e !== null &&
-        typeof (e as ProctorEvent).type === "string" &&
-        typeof (e as ProctorEvent).timestamp === "number",
-    );
-  },
-
-  saveProctorEvents(events: ProctorEvent[]): void {
-    writeRaw(PROCTOR_KEY, events.slice(-200));
-  },
-
-  clearProctorEvents(): void {
-    removeRaw(PROCTOR_KEY);
   },
 };

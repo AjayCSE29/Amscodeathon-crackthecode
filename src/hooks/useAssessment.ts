@@ -51,6 +51,7 @@ export interface UseAssessmentApi {
   resetCode: (questionId: string) => void;
   setDebugLanguage: (language: DebugProgramLanguage) => void;
   navigateDebug: (index: number) => void;
+  revealHint: (questionId: string) => void;
   submitAssessment: (round: 1 | 2) => void;
   finalizeExpired: () => void;
   resetToEntry: () => void;
@@ -73,6 +74,7 @@ function buildSession(candidate: Candidate): AssessmentSession {
     currentDebug: 1,
     codeEdits: {},
     debugLanguage: "C++",
+    hintReveals: {},
   };
 }
 
@@ -336,6 +338,20 @@ export function useAssessment(): UseAssessmentApi {
     });
   }, []);
 
+  const revealHint = useCallback((questionId: string) => {
+    setSession((prev) => {
+      if (!prev || prev.status !== "round2" || prev.hintReveals[questionId]) {
+        return prev;
+      }
+      const next = {
+        ...prev,
+        hintReveals: { ...prev.hintReveals, [questionId]: true },
+      };
+      commit(next);
+      return next;
+    });
+  }, []);
+
   const finalizeExpired = useCallback(() => {
     setSession((prev) => {
       if (!prev) return prev;
@@ -420,6 +436,7 @@ export function useAssessment(): UseAssessmentApi {
     resetCode,
     setDebugLanguage,
     navigateDebug,
+    revealHint,
     submitAssessment,
     finalizeExpired,
     resetToEntry,

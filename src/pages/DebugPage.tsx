@@ -45,6 +45,7 @@ export function DebugPage({ api }: DebugPageProps) {
     setCode,
     resetCode,
     setDebugLanguage,
+    revealHint,
     submitAssessment,
     finalizeExpired,
   } = api;
@@ -227,7 +228,12 @@ export function DebugPage({ api }: DebugPageProps) {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-start">
           <aside className="lg:col-span-4 flex flex-col gap-space-md">
-            <ProblemPanel question={question} language={language} />
+            <ProblemPanel
+              question={question}
+              language={language}
+              hintRevealed={Boolean(session.hintReveals[question.id])}
+              onRevealHint={() => revealHint(question.id)}
+            />
           </aside>
 
           <main className="lg:col-span-8 flex flex-col gap-space-md lg:h-[calc(100vh-7rem)] lg:min-h-[620px] min-h-0">
