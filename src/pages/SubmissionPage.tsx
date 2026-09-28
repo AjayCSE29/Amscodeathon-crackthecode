@@ -4,7 +4,7 @@ import type { AssessmentSession } from "../types/assessment";
 interface SubmissionPageProps {
   session: AssessmentSession;
   totalQuestions: number;
-  stage: "round1" | "final";
+  stage: "round1" | "round2" | "final";
   onProceed?: () => void;
 }
 

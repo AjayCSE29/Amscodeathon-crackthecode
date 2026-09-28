@@ -15,23 +15,34 @@ portion of a two-round competitive exam:
    a per-language editor, and real execution against a local Piston instance.
 4. **Submission** — lock the session and confirm receipt. No results are shown.
 
-Assessment state lives in the browser and is persisted to `localStorage`. The
-only backend is `server/index.mjs`, a dependency-free proxy in front of a
-self-hosted Piston instance. There is no database, no authentication service, no
-scoring, and no result computation. The `Question.correctOptionId` field exists
-only as a placeholder for a future backend and is never rendered.
+Assessment state lives in the browser and is persisted to `localStorage`, which
+remains the source of truth. The only backend is `server/index.mjs`, a
+dependency-free proxy in front of a self-hosted Piston instance and a Supabase
+Postgres database. The client never talks to Supabase: it calls `/api/*`, and
+the server holds the service-role credential. Grading is server-side too: Round
+1 is scored at submit time (Gemini verdict with a deterministic `scoring.mjs`
+fallback, both recorded in `round1_crosschecks` for an admin audit trail), and
+Round 2 verdicts are produced by a Gemini queue that auto-grades each
+"Confirm output and proceed" submission. There is no participant-facing scoring
+UI — `is_right`, `final_score`, `q_correct`, and `score` exist only in the
+database and in the server-only admin panel, and the sync response deliberately
+omits them. The Round 1 answer key lives solely in `server/answerKey.mjs` and is
+absent from the client bundle.
 
 ### Goals
 
 - A faithful, distraction-free, light-mode exam UI matching `design/DESIGN.md`.
 - A refresh-safe session that survives reloads without a router or database.
 - Real code execution for Round 2, with the browser never touching Piston.
-- Clean boundaries so a real backend can be dropped in later.
+- A dependency-free Node backend that owns auth, Supabase access, and grading,
+  so the participant bundle cannot reach the database or score fields.
+- A server-only admin dashboard for the roster, results, and re-grading.
 
 ### Non-goals
 
-- Database, external API, or server-side proctoring.
-- Scoring, grading, results, leaderboards, analytics, or answer review.
+- Server-side proctoring (the guard is local-only).
+- Participant-facing scoring or answer review: grades, `is_right`, and `final_score`
+  exist server-side and appear only behind `/api/admin/*`.
 - Dark mode, theme switching, or mobile support.
 - Returning to Round 1 after Round 2 begins — the assessment moves forward only.
 
@@ -41,15 +52,19 @@ only as a placeholder for a future backend and is never rendered.
 | ---------- | ---------------------------------------------------- |
 | UI runtime | React 19                                             |
 | Language   | TypeScript ~6 with strict, erasable-syntax settings  |
-| Build      | Vite 8 + `@vitejs/plugin-react`                      |
+| Build      | Vite 8 + `@vitejs/plugin-react` (dual MPA entry)     |
 | Styling    | Tailwind CSS v4 (`@theme` tokens in `src/index.css`) |
 | Lint       | oxlint                                               |
 | State      | React hooks + `localStorage`                         |
 | Execution  | Node `http` server proxying to Piston                |
+| Database   | Supabase Postgres via REST (`fetch` + service-role key) |
+| Grading    | Gemini `generateContent` via `fetch`, deterministic fallback |
+| Auth       | `node:crypto` scrypt + HMAC-signed stateless tokens  |
 
 Notably absent by design: a router (navigation is status-based), a state
-management library (`useAssessment` is the single store), and any runtime
-dependency beyond React.
+management library (`useAssessment` is the single store), any runtime
+dependency beyond React, and any Supabase/Gemini client SDK (both are plain
+`fetch`).
 
 ## App flow
 
@@ -137,11 +152,19 @@ Key behaviors:
 | `src/components/submission/`| `SubmissionConfirmation`, reused for both round 1 and final |
 | `src/components/ui/`        | `Icon` (Material Symbols wrapper)                          |
 | `src/hooks/`                | Central store, countdown, fullscreen guard, mobile detection |
-| `src/lib/`                  | Storage, execution client, code tokenizer, fullscreen helpers, rich text, utilities |
 | `src/data/mockQuestions.ts` | 60 Round 1 MCQs, `ASSESSMENT_DURATION_MS`                   |
 | `src/data/debugQuestions.ts`| 20 Round 2 problems, `ROUND2_DURATION_MS`                   |
 | `src/types/assessment.ts`   | Shared domain types                                         |
-| `server/index.mjs`          | Execution proxy and static file server                      |
+| `src/lib/`                  | Storage, execution + sync clients, code tokenizer, helpers  |
+| `src/admin/`                | Server-only admin React app (login + dashboards)            |
+| `admin.html`                | Admin entry point, served at `/admin`                       |
+| `server/index.mjs`          | Execution proxy, static server, sync & admin routes, sweeper bootstrap |
+| `server/auth.mjs`           | scrypt password hashing, participant + admin HMAC tokens    |
+| `server/supabase.mjs`       | REST client to Supabase (service role, global fetch)        |
+| `server/evaluate.mjs`       | Gemini grader + Round 2 queue/sweeper                        |
+| `server/answerKey.mjs`      | Round 1 key (server-only)                                    |
+| `server/scoring.mjs`        | Deterministic Round 1 fallback                               |
+| `supabase/`                 | `001_schema.sql` … `004_admin_users.sql` migrations         |
 
 ## Data model
 
@@ -167,6 +190,7 @@ interface AssessmentSession {
   expiresAt: number;              // absolute Round 1 deadline (refresh-safe)
   currentQuestion: number;        // 1-based
   status: AssessmentStatus;
+  round1Synced: boolean;          // true once /api/sync/round1 succeeded
   responses: Record<string, OptionId | null>;
   reviewFlags: Record<string, boolean>;
   visited: Record<string, boolean>;
@@ -184,7 +208,6 @@ interface Question {
   question: string;
   options: QuestionOption[];
   code?: CodeSnippet;
-  correctOptionId?: OptionId;     // NEVER rendered
 }
 
 type DebugProgramLanguage = "C++" | "Python" | "Java";
@@ -198,6 +221,7 @@ interface DebugQuestion {
   starters: Record<DebugProgramLanguage, string[]>;
   sampleCases: Record<DebugProgramLanguage, DebugCase[]>;
   bugHints: Record<DebugProgramLanguage, string>;
+  driver?: Record<DebugProgramLanguage, { before?: string[]; after?: string[] }>;
 }
 ```
 
@@ -239,11 +263,25 @@ On load, `storage.loadSession()` returns a discriminated `LoadResult`:
 - `corrupt` — invalid JSON or failed the `isSessionLike` shape check; show
   `RestoreError`.
 - `ok` — resume from the stored session, after `withRound2Defaults` backfills the
-  Round 2 fields and migrates pre-Round-2 `codeEdits` keys to the
-  `<id>:C++` shape.
+  Round 2 fields, seeds `round1Synced: false`, and migrates pre-Round-2 `codeEdits`
+  keys to the `<id>:C++` shape.
 
 `isSessionLike` deliberately accepts sessions *without* the Round 2 fields, so a
 session saved by an older build loads instead of being discarded as corrupt.
+
+## Server-synced result flags
+
+Two `AssessmentSession` fields track what has already been pushed to the server:
+
+- `round1Synced` — set to `true` after `/api/sync/round1` returns
+  `{ accepted: { round1: N } }`. A `useEffect` in `useAssessment` fires it when
+  the session enters `round1-submitted`; a `round1SyncStartedRef` guard blocks
+  re-entry while it is in flight, and the idempotent endpoint makes retries safe.
+- Round 2 submissions are pushed per-problem at "Confirm output and proceed"
+  (`/api/round2/confirm`); the effect keys on the populated `codeEdits` and a
+  `lastConfirmedRef` digest to avoid re-posting unchanged drafts. Both syncs are
+  fire-and-forget: `localStorage` remains the source of truth and a failure must
+  not block the UI.
 
 ## Hooks
 
@@ -387,6 +425,15 @@ break because nothing enforces them at build time:
   only correct when the starter runs, the starter's output differs from the
   expected output, and the fixed version reproduces the expected output exactly.
 
+Round 3 (`src/data/round3Questions.ts`) is the same shape with a different
+contract: `starters` hold the **bare LeetCode template** (`class Solution`
+with an empty method, no `main`), and the stdin→stdout harness lives in a
+per-language `driver` (`before`/`after`) that `composedProgram()` merges in at
+Run/Confirm time — so the editor, `Reset`, and drafts stay template-only while
+the executed/captured code is executable. Java must put `public class Main`
+(the driver) first; C++/Python keep includes in `driver.before` and append
+`main` after the template.
+
 ## The execution proxy
 
 `server/index.mjs` is plain Node with no dependencies, outside the `tsc -b`
@@ -422,6 +469,65 @@ flowchart LR
   `{ stdout: "", stderr: <message>, exitCode: null }`, so the terminal always has
   something to render. Only client errors (`4xx`) and rate limits (`429`) use
   error status codes.
+
+## Auth, sync, and grading routes
+
+Beyond `/api/run` and `/api/health`, `server/index.mjs` owns every server-side
+concern. Each route has its own per-IP rate bucket (see `.env.example`).
+
+| Route                          | Purpose |
+| ------------------------------ | ------- |
+| `POST /api/auth/login`         | Verifies `user_id` + scrypt password against the `users` roster; returns a 12 h HMAC session token |
+| `POST /api/sync`               | Final sync. Round-1 branch writes answers (skipping teams that already graded); Round-2 branch upserts all confirmed submissions |
+| `POST /api/sync/round1`        | Round-1-only sync used at the round-1 interstitial; idempotent, returns `{ round1: N }` |
+| `POST /api/round2/confirm`     | Upserts one submission; resets `is_right` to `null` when content changed and enqueues Gemini grading |
+| `POST /api/admin/login`        | `ADMIN_USERNAME`/`ADMIN_PASSWORD` (scrypt) → 4-part admin token |
+| `GET/POST/PATCH/DELETE /api/admin/teams` | Roster CRUD |
+| `GET /api/admin/overview`      | Counts and leaderboards, both rounds |
+| `GET /api/admin/round1`        | Per-team summaries + per-question answers (contains `is_right`/scores) |
+| `GET /api/admin/round2`        | All Round 2 submissions incl. `is_right` and `final_score` |
+| `GET /api/admin/export`        | CSV of all rows |
+| `POST /api/admin/evaluate/round1` / `round2` | Manual re-grade (batch / single) |
+| `GET /admin`                   | Serves `admin.html` (prod); dev serves it via Vite MPA |
+
+Admin responses are the **only** place scores and verdicts appear; none are ever
+returned to a participant token.
+
+### Round 1 grading
+
+`ingestRound1` is the single path for both `/api/sync/round1` and the final
+sync's Round-1 branch:
+
+1. Normalize answers, drop anything out of range, and compare against
+   `server/answerKey.mjs`.
+2. Run the deterministic `scoring.mjs` grade for the baseline.
+3. When Gemini is enabled, post the chosen options `Q1: B, Q3: C, …` plus the
+   key and take Gemini's verdict as the authoritative `round1_results` grade;
+   on any failure the deterministic grade is used.
+4. Always write a `round1_crosschecks` audit row (`status` `ok`/`failed`/
+   `gemini-disabled`) carrying both the Gemini and deterministic counts so an
+   admin can spot disagreement.
+
+The endpoint returns `{ ok, accepted: { round1 } }` and deliberately no score.
+Teams with an existing `round1_results` row are skipped (`round1: 0`).
+
+### Round 2 grading
+
+`/api/round2/confirm` upserts `round2_submissions` and pushes the row onto a
+queue in `server/evaluate.mjs`. A sweeper (30 s) drains the queue with up to
+`GEMINI_MAX_CONCURRENCY` workers, each rate-limited to 5 attempts and a 15 s
+timeout:
+
+1. Fetch the row; a non-null `is_right` was already graded, so skip.
+2. Send the program, the observed `output` (joined stdout), `stderr`, `exit
+   code`, `is_hint`, and the problem's expected output/sample cases to Gemini.
+3. The judge prompt must reject solutions that hardcode the expected output.
+4. Persist `is_right`; `final_score` is a generated column (5 right / 3 hint /
+   0 wrong), so it follows automatically.
+
+Re-confirming a changed draft resets `is_right` to `null` and re-enqueues it.
+The default model is `gemini-3.8-flash`; `GEMINI_DISABLE=1` skips grading and
+leaves `is_right` `null` (the admin can still re-grade later).
 - **Static serving** — `GET /*` serves `dist/` with a MIME map and an
   `index.html` fallback, and rejects path traversal by normalizing and
   prefix-checking against `DIST_DIR`. A missing build returns `503` with
@@ -476,13 +582,21 @@ Icons come from Material Symbols through the `ui/Icon` wrapper. Light mode only.
 
 ## Privacy & security
 
-- The browser only ever calls same-origin `/api/*`; Piston URLs appear nowhere in
-  the frontend.
-- Correct answers live in mock data but never reach the rendered DOM.
-- All `localStorage` access is centralized in one guarded module.
-- The team access password is stored in `localStorage` **in plaintext** as part
-  of the session. That is acceptable only because it is a throwaway competition
-  gate, not a real credential — see "Known gaps".
+- The browser only ever calls same-origin `/api/*`; Piston and Supabase URLs
+  appear nowhere in the frontend.
+- The Round 1 key is server-only (`server/answerKey.mjs`); `mockQuestions.ts`
+  carries no correct answers, so the key cannot leak via the participant bundle.
+- Synced responses and admin answers are never rendered with correctness in the
+  participant app; `is_right`/`final_score`/`score` exist only in the database
+  and in `/api/admin/*` responses.
+- The admin panel is a separate entry (`admin.html`) with its own 4-part,
+  12-hour HMAC token derived from a secret independent of the participant key.
+  Credentials are scrypt-hashed at boot and never leave `server/auth.mjs`.
+- All `localStorage` access is centralized in one guarded module; the plaintext
+  team password is scrubbed by `isSessionLike`'s `clearSession()` (see
+  "Known gaps").
+- Rate buckets are per-IP and per-route, so back-to-back syncs against a shared
+  NAT IP can legitimately throttle.
 
 ## Known gaps
 
@@ -504,11 +618,16 @@ Worth resolving, in rough priority order:
    unset, which disables Vite's DNS-rebinding protection on a server bound to
    `0.0.0.0`. Fine for a dev server on a trusted network; set `ALLOWED_HOSTS` for
    anything exposed.
-5. **The "You will lose 2 points" hint penalty is cosmetic.** Nothing scores the
-   assessment, so revealing a hint costs nothing today. `hintReveals` is
-   persisted and ready to be read by a future backend; the deduction itself has
-   nowhere to apply yet. For the same reason the blur cannot be a real
-   confidentiality control — see the Round 2 canvas section.
+5. **The "You will lose 2 points" hint penalty is cosmetic.** Round 2 verdicts
+   carry a 5/3/0 `final_score` marker, but the promo copy in the participant UI
+   is not enforced — a hint simply flags the row (`is_hint`), and `final_score`
+   is a database generated column. The blur is therefore a confidentiality
+   control, not an enforcement one; see the Round 2 canvas section.
+6. **The Round 1 Gemini verdict can diverge from the deterministic key.** It is
+   authoritative in `round1_results`, but an admin sees both grades in
+   `round1_crosschecks` and can re-sync or correct manually.
+7. **Admin auth is password-based with no lockout or MFA** beyond per-IP rate
+   buckets; acceptable for a local competition, revisit if exposed.
 
 Dead code from the pre-Round-2 and pre-header builds was removed: `useProctoring`
 and its `ProctorEvent` / `ProctorEventType` / `CameraStatus` types and the
@@ -519,19 +638,24 @@ the superseded `AssessmentTimer` component, and the `TIMER_TIER` / `InputField` 
 
 ## Extension points
 
-To connect a real backend later:
+Already implemented, and still open:
 
 1. Replace `src/data/mockQuestions.ts` and `src/data/debugQuestions.ts` with
-   fetched content, keeping the `Question` and `DebugQuestion` types (drop
-   `correctOptionId` from the client payload entirely).
+   fetched content, keeping the `Question` and `DebugQuestion` types. There is
+   no `correctOptionId` to drop any more — the key is server-only.
 2. Swap `expiresAt` / `round2ExpiresAt` for server-authoritative deadlines; both
    timers already read absolute timestamps, so only the source of the value
    changes.
 3. Replace `src/lib/storage.ts` internals with API calls behind the same
-   interface, and let the persistence layer sync `commit()` writes.
-4. Submit `responses` and `codeEdits` to the server in `submitAssessment`; the UI
-   never needs to know the outcome.
-5. To scale code execution, move the queue in `server/index.mjs` to Redis or a
+   interface. `localStorage` is currently the source of truth and the sync at
+   Round 2 exit is fire-and-forget, so results are already durable offline.
+4. Server-authoritative deadlines: `/api/auth/login` already returns the roster
+   start floor; extend it to hand back `expiresAt`/`round2ExpiresAt` so a
+   crafty refresh cannot extend Round 2.
+5. Move the Round 2 confirmation from an effect-driven push to an explicit
+   submit-time flush in `submitAssessment(2)`, closing the gap where a crash
+   between confirm and final sync loses a draft.
+6. To scale code execution, move the queue in `server/index.mjs` to Redis or a
    real job runner — the request/response contract with `runClient.ts` can stay
    identical.
 
@@ -543,6 +667,10 @@ To connect a real backend later:
   `/api/*` on `PORT`.
 - `npm run lint` — oxlint with the React plugin; `react/rules-of-hooks` is an
   error.
+- `vite.config.ts` uses `appType: "mpa"` with two inputs (`index.html` +
+  `admin.html`). Dev serves `/admin` from the admin entry; prod falls back to
+  `admin.html` via `serveStatic`. The participant `dist/` must never contain
+  `/api/admin`, score fields, or `GEMINI` — grep `dist/assets/` after builds.
 - `tsconfig.node.json` includes `vite.config.ts`; there is no second, shadowing
   `vite.config.js`.
 - TypeScript enforces `verbatimModuleSyntax` (type-only imports),

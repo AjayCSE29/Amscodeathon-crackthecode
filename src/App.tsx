@@ -12,6 +12,8 @@ import {
   useFullscreenGuard,
 } from "./hooks/useFullscreenGuard";
 import { requestFullscreen } from "./lib/fullscreen";
+import { DEBUG_QUESTIONS } from "./data/debugQuestions";
+import { ROUND3_QUESTIONS } from "./data/round3Questions";
 import { AssessmentPage } from "./pages/AssessmentPage";
 import { DebugPage } from "./pages/DebugPage";
 import { EntryPage } from "./pages/EntryPage";
@@ -61,7 +63,9 @@ export default function App() {
   };
 
   const guard = useFullscreenGuard(
-    session?.status === "active" || session?.status === "round2",
+    session?.status === "active" ||
+      session?.status === "round2" ||
+      session?.status === "round3",
     FULLSCREEN_GRACE_MS,
     handleBreach,
   );
@@ -77,7 +81,20 @@ export default function App() {
     ) {
       finalizeExpired();
     }
-  }, [session?.status, session?.expiresAt, session?.round2ExpiresAt, finalizeExpired]);
+    if (
+      session?.status === "round3" &&
+      session.round3ExpiresAt != null &&
+      Date.now() >= session.round3ExpiresAt
+    ) {
+      finalizeExpired();
+    }
+  }, [
+    session?.status,
+    session?.expiresAt,
+    session?.round2ExpiresAt,
+    session?.round3ExpiresAt,
+    finalizeExpired,
+  ]);
 
   if (isMobile) return <MobileBlockScreen />;
 
@@ -96,6 +113,20 @@ export default function App() {
         onProceed={() => {
           requestFullscreen();
           api.proceedToRound2();
+        }}
+      />
+    );
+  }
+
+  if (session?.status === "round2-submitted") {
+    return (
+      <SubmissionPage
+        session={session}
+        totalQuestions={api.totalQuestions}
+        stage="round2"
+        onProceed={() => {
+          requestFullscreen();
+          api.proceedToRound3();
         }}
       />
     );
@@ -128,7 +159,28 @@ export default function App() {
         {guard.warning ? (
           <FullscreenWarning remainingMs={guard.remainingMs} />
         ) : null}
-        <DebugPage api={api} />
+        <DebugPage
+          api={api}
+          questions={DEBUG_QUESTIONS}
+          roundLabel="Round 02"
+          submitRound={2}
+        />
+      </>
+    );
+  }
+
+  if (session?.status === "round3") {
+    return (
+      <>
+        {guard.warning ? (
+          <FullscreenWarning remainingMs={guard.remainingMs} />
+        ) : null}
+        <DebugPage
+          api={api}
+          questions={ROUND3_QUESTIONS}
+          roundLabel="Round 03"
+          submitRound={3}
+        />
       </>
     );
   }

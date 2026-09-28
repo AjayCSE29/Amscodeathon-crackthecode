@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { AuthError, login } from "../../lib/syncClient";
 import { cn } from "../../lib/utils";
 import type { Candidate } from "../../types/assessment";
 import { Icon } from "../ui/Icon";
@@ -31,18 +32,37 @@ export function CandidateForm({
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [attempted, setAttempted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const hasAnyError = useMemo(
     () => Object.keys(errors).length > 0,
     [errors],
   );
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setAttempted(true);
+    setFormError(null);
     const found = validate({ teamName, password });
     setErrors(found);
     if (Object.keys(found).length > 0) return;
-    onContinue({ teamName: teamName.trim(), password });
+    setSubmitting(true);
+    try {
+      const result = await login(teamName.trim(), password);
+      setPassword("");
+      onContinue({
+        teamName: teamName.trim(),
+        userId: result.userId,
+        token: result.token,
+      });
+    } catch (err) {
+      setFormError(
+        err instanceof AuthError || err instanceof Error
+          ? err.message
+          : "Sign-in failed.",
+      );
+      setSubmitting(false);
+    }
   };
 
   const touchedError = (key: keyof FieldErrors) =>
@@ -53,7 +73,7 @@ export function CandidateForm({
       className="space-y-5"
       onSubmit={(e) => {
         e.preventDefault();
-        handleSubmit();
+        void handleSubmit();
       }}
       noValidate
     >
@@ -159,18 +179,34 @@ export function CandidateForm({
         ) : null}
       </div>
 
+      {formError ? (
+        <div
+          className="flex items-start gap-2.5 rounded-lg border border-error/40 bg-error/8 px-3.5 py-3"
+          role="alert"
+        >
+          <Icon name="error" className="text-lg text-error shrink-0 mt-px" />
+          <p className="font-body-sm text-body-sm text-error">{formError}</p>
+        </div>
+      ) : null}
+
       <div className="pt-2">
         <button
           type="submit"
+          disabled={submitting}
           className={cn(
             "w-full py-3.5 px-6 rounded-lg font-label-md text-label-md tracking-wider uppercase font-semibold",
-            "flex items-center justify-center gap-3 transition-all duration-150 transform active:scale-[0.99] cursor-pointer",
-            "bg-primary-container hover:bg-primary shadow-md hover:shadow-lg text-on-primary",
-            !hasAnyError && attempted && "ring-2 ring-primary/40",
+            "flex items-center justify-center gap-3 transition-all duration-150 transform active:scale-[0.99]",
+            submitting
+              ? "cursor-not-allowed opacity-70"
+              : "cursor-pointer bg-primary-container hover:bg-primary shadow-md hover:shadow-lg text-on-primary",
+            !hasAnyError && attempted && !submitting && "ring-2 ring-primary/40",
           )}
         >
-          <span>Continue to Assessment</span>
-          <Icon name="arrow_forward" className="text-lg" />
+          <span>{submitting ? "Verifying" : "Continue to Assessment"}</span>
+          <Icon
+            name={submitting ? "timer" : "arrow_forward"}
+            className="text-lg"
+          />
         </button>
       </div>
     </form>

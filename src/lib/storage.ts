@@ -1,10 +1,15 @@
-import type { AssessmentSession, OptionId } from "../types/assessment";
+import type {
+  AssessmentSession,
+  OptionId,
+  SubmissionSnapshot,
+} from "../types/assessment";
 
 const SESSION_KEY = "codeathon_session";
 const ANSWERS_KEY = "codeathon_answers";
 const FLAGS_KEY = "codeathon_flags";
 const VISITED_KEY = "codeathon_visited";
 const CODE_EDITS_KEY = "codeathon_code_edits";
+const SUBMISSIONS_KEY = "codeathon_submissions";
 
 export interface StorageFailure {
   ok: false;
@@ -43,6 +48,8 @@ function removeRaw(key: string): void {
 export function isSessionLike(value: unknown): value is AssessmentSession {
   if (typeof value !== "object" || value === null) return false;
   const s = value as Record<string, unknown>;
+  if (typeof s.candidate !== "object" || s.candidate === null) return false;
+  const candidate = s.candidate as Record<string, unknown>;
   return (
     typeof s.sessionId === "string" &&
     typeof s.startedAt === "number" &&
@@ -52,21 +59,39 @@ export function isSessionLike(value: unknown): value is AssessmentSession {
       s.status === "active" ||
       s.status === "round1-submitted" ||
       s.status === "round2" ||
+      s.status === "round2-submitted" ||
+      s.status === "round3" ||
       s.status === "submitted") &&
-    typeof s.candidate === "object" &&
-    s.candidate !== null &&
+    typeof candidate.teamName === "string" &&
+    typeof candidate.userId === "string" &&
+    typeof candidate.token === "string" &&
     typeof s.responses === "object" &&
     s.responses !== null &&
     typeof s.reviewFlags === "object" &&
     s.reviewFlags !== null &&
     typeof s.visited === "object" &&
     s.visited !== null &&
+    (s.round1FinishSeconds === undefined ||
+      s.round1FinishSeconds === null ||
+      typeof s.round1FinishSeconds === "number") &&
+    (s.round1Synced === undefined || typeof s.round1Synced === "boolean") &&
     (s.round2ExpiresAt === undefined ||
       s.round2ExpiresAt === null ||
       typeof s.round2ExpiresAt === "number") &&
+    (s.round2FinishSeconds === undefined ||
+      s.round2FinishSeconds === null ||
+      typeof s.round2FinishSeconds === "number") &&
+    (s.round3ExpiresAt === undefined ||
+      s.round3ExpiresAt === null ||
+      typeof s.round3ExpiresAt === "number") &&
+    (s.round3FinishSeconds === undefined ||
+      s.round3FinishSeconds === null ||
+      typeof s.round3FinishSeconds === "number") &&
     (s.currentDebug === undefined || typeof s.currentDebug === "number") &&
     (s.codeEdits === undefined ||
       (typeof s.codeEdits === "object" && s.codeEdits !== null)) &&
+    (s.debugSubmissions === undefined ||
+      (typeof s.debugSubmissions === "object" && s.debugSubmissions !== null)) &&
     (s.debugLanguage === undefined ||
       s.debugLanguage === "C++" ||
       s.debugLanguage === "Python" ||
@@ -76,7 +101,7 @@ export function isSessionLike(value: unknown): value is AssessmentSession {
   );
 }
 
-function withRound2Defaults(value: AssessmentSession): AssessmentSession {
+function withDefaults(value: AssessmentSession): AssessmentSession {
   const rawEdits = value.codeEdits ?? {};
   const codeEdits: Record<string, string> = {};
   for (const [key, text] of Object.entries(rawEdits)) {
@@ -84,9 +109,15 @@ function withRound2Defaults(value: AssessmentSession): AssessmentSession {
   }
   return {
     ...value,
+    round1FinishSeconds: value.round1FinishSeconds ?? null,
+    round1Synced: value.round1Synced ?? false,
     round2ExpiresAt: value.round2ExpiresAt ?? null,
+    round2FinishSeconds: value.round2FinishSeconds ?? null,
+    round3ExpiresAt: value.round3ExpiresAt ?? null,
+    round3FinishSeconds: value.round3FinishSeconds ?? null,
     currentDebug: value.currentDebug ?? 1,
     codeEdits,
+    debugSubmissions: value.debugSubmissions ?? {},
     debugLanguage: value.debugLanguage ?? "C++",
     hintReveals: value.hintReveals ?? {},
   };
@@ -100,9 +131,10 @@ export const storage = {
     const data = readRaw(SESSION_KEY);
     if (data === null) return { ok: false, reason: "missing" };
     if (data === undefined || !isSessionLike(data)) {
+      storage.clearSession();
       return { ok: false, reason: "corrupt" };
     }
-    return { ok: true, data: withRound2Defaults(data) };
+    return { ok: true, data: withDefaults(data) };
   },
 
   saveSession(session: AssessmentSession): void {
@@ -125,11 +157,23 @@ export const storage = {
     writeRaw(CODE_EDITS_KEY, codeEdits);
   },
 
+  saveSubmissionSnapshot(snapshot: SubmissionSnapshot): void {
+    writeRaw(SUBMISSIONS_KEY, snapshot);
+  },
+
+  loadSubmissionSnapshot(): SubmissionSnapshot | null {
+    const data = readRaw(SUBMISSIONS_KEY);
+    if (data === null || data === undefined) return null;
+    if (typeof data !== "object" || Array.isArray(data)) return null;
+    return data as SubmissionSnapshot;
+  },
+
   clearSession(): void {
     removeRaw(SESSION_KEY);
     removeRaw(ANSWERS_KEY);
     removeRaw(FLAGS_KEY);
     removeRaw(VISITED_KEY);
     removeRaw(CODE_EDITS_KEY);
+    removeRaw(SUBMISSIONS_KEY);
   },
 };

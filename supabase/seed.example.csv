@@ -1,0 +1,4 @@
+user_id,team_name,hashed_password
+110101220,NovaStack,scrypt$16384$8$1$OOdDqzg4uUllr8p5Rowjhg$BiaRShgNrm9tTL-Xnsm_rnySuVEzCGqi9TVNcJvucZQ
+110101236,TechTitans,scrypt$16384$8$1$sUsIZ7pmTELuw9H7HYpkIw$u6KPXCu6Gp98sG5G8hHUoEvjzYT-YVJHLMt0e3nHMP4
+110101245,HackNova,scrypt$16384$8$1$MA14IPocT3ID2h9YkfCXpA$wn770VN3MhG9TYDtL0IS7woyvtYdkEYjtbnKgc2_qE0

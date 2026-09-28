@@ -11,6 +11,17 @@ const extraHosts = (process.env.ALLOWED_HOSTS ?? "")
 export default defineConfig({
   plugins: [react(), tailwindcss()],
 
+  appType: "mpa",
+
+  build: {
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        admin: "admin.html",
+      },
+    },
+  },
+
   server: {
     host: "0.0.0.0",
 

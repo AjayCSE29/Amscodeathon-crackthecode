@@ -10,6 +10,8 @@ interface ProblemPanelProps {
   hintRevealed: boolean;
   onRevealHint: () => void;
   className?: string;
+  label?: string;
+  hintPenalty?: string;
 }
 
 const difficultyClass: Record<DebugQuestion["difficulty"], string> = {
@@ -24,6 +26,8 @@ export function ProblemPanel({
   hintRevealed,
   onRevealHint,
   className,
+  label = "Debug Problem",
+  hintPenalty = "You will lose 2 points",
 }: ProblemPanelProps) {
   const sampleCases = question.sampleCases[language];
   return (
@@ -36,7 +40,7 @@ export function ProblemPanel({
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-1 min-w-0">
           <span className="font-label-sm text-label-sm uppercase tracking-widest text-primary font-bold">
-            Debug Problem {String(question.index).padStart(2, "0")}
+            {label} {String(question.index).padStart(2, "0")}
           </span>
           <h2 className="font-headline-md text-headline-md font-bold text-on-surface leading-tight">
             {question.title}
@@ -120,7 +124,7 @@ export function ProblemPanel({
               <span>Show Hint</span>
             </button>
             <span className="bg-amber-soft px-2 py-0.5 rounded font-label-sm text-label-sm text-amber-dark/80">
-              You will lose 2 points
+              {hintPenalty}
             </span>
           </div>
         ) : null}

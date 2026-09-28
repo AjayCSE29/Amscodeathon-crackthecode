@@ -329,7 +329,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "45" },
       { id: "D", text: "47" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-002",
@@ -342,7 +341,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "10 billion" },
       { id: "D", text: "20 billion" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-003",
@@ -354,7 +352,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "Router" },
       { id: "D", text: "Repeater" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-004",
@@ -366,7 +363,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`300.10.2.1`" },
       { id: "D", text: "`192.168.500.2`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-005",
@@ -378,7 +374,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "Candidate Value" },
       { id: "D", text: "Composite Value" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-006",
@@ -391,7 +386,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "30 seconds" },
       { id: "D", text: "40 seconds" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-007",
@@ -403,7 +397,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`10`" },
       { id: "D", text: "`Undefined`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-008",
@@ -415,7 +408,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "Cache" },
       { id: "D", text: "Secondary storage" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-009",
@@ -428,7 +420,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "4" },
       { id: "D", text: "8" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-010",
@@ -441,7 +432,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "50%" },
       { id: "D", text: "75%" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-011",
@@ -454,7 +444,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "20 MB/s" },
       { id: "D", text: "25 MB/s" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-012",
@@ -466,7 +455,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "3" },
       { id: "D", text: "4" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-013",
@@ -479,7 +467,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "20%" },
       { id: "D", text: "90%" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-014",
@@ -492,7 +479,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "SSH" },
       { id: "D", text: "SMTP" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-015",
@@ -505,7 +491,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "Compilation" },
       { id: "D", text: "Fragmentation" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-016",
@@ -518,7 +503,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`7 5`" },
       { id: "D", text: "`5 7`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-017",
@@ -531,7 +515,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "16" },
       { id: "D", text: "32" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-018",
@@ -544,7 +527,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "20" },
       { id: "D", text: "45" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-019",
@@ -557,7 +539,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "6" },
       { id: "D", text: "9" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-020",
@@ -570,7 +551,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "6" },
       { id: "D", text: "9" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-021",
@@ -583,7 +563,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "6" },
       { id: "D", text: "20" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-022",
@@ -596,7 +575,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`n / 3 == 0 AND n / 5 == 0`" },
       { id: "D", text: "`n % 15 == 1`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-023",
@@ -609,7 +587,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "12" },
       { id: "D", text: "14" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-024",
@@ -622,7 +599,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "4" },
       { id: "D", text: "5" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-025",
@@ -635,7 +611,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "8" },
       { id: "D", text: "15" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-026",
@@ -648,7 +623,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "12" },
       { id: "D", text: "15" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-027",
@@ -661,7 +635,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`10 15`" },
       { id: "D", text: "`15 10`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-028",
@@ -674,7 +647,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "3" },
       { id: "D", text: "5" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-029",
@@ -687,7 +659,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "3" },
       { id: "D", text: "5" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-030",
@@ -700,7 +671,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "Whether n is prime" },
       { id: "D", text: "Whether n is a perfect square" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-031",
@@ -713,7 +683,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "48" },
       { id: "D", text: "720" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-032",
@@ -726,7 +695,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "13" },
       { id: "D", text: "21" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-033",
@@ -739,7 +707,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`14 8 4`" },
       { id: "D", text: "`10 7 2`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-034",
@@ -752,7 +719,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`30 20`" },
       { id: "D", text: "`20 30`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-035",
@@ -765,7 +731,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`40 25`" },
       { id: "D", text: "`25 40`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-036",
@@ -778,7 +743,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`O(n log n)`" },
       { id: "D", text: "`O(n²)`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-037",
@@ -791,7 +755,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`O(n log n)`" },
       { id: "D", text: "`O(n²)`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-038",
@@ -804,7 +767,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`10 20 50 60`" },
       { id: "D", text: "`10 20 40 50`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-039",
@@ -817,7 +779,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`20 30 40 60`" },
       { id: "D", text: "`30 40 60 50`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-040",
@@ -830,7 +791,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "3" },
       { id: "D", text: "4" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-041",
@@ -843,7 +803,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`[2, 1, 3, 5, 8]`" },
       { id: "D", text: "`[1, 2, 3, 5, 8]`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-042",
@@ -856,7 +815,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`23→3, 43→3, 13→3, 27→7`" },
       { id: "D", text: "`23→3, 43→4, 13→3, 27→7`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-043",
@@ -869,7 +827,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`5 → 10 → 20 → 30 → 25 → NULL`" },
       { id: "D", text: "`5 → 10 → 20 → 25 → 30 → 40 → NULL`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-044",
@@ -882,7 +839,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`A C F B E D`" },
       { id: "D", text: "`A D B E C F`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-045",
@@ -895,7 +851,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`O(n log² n)`" },
       { id: "D", text: "`O(n² log n)`" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-046",
@@ -908,7 +863,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`[5, 10, 8, 3, 6]`" },
       { id: "D", text: "`[3, 10, 8, 5, 6]`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-047",
@@ -921,7 +875,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`3 2 1 1 2 3`" },
       { id: "D", text: "`3 2 1 2 3`" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-048",
@@ -934,7 +887,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`20 → 30 → 40 → 60`" },
       { id: "D", text: "`30 → 40 → 60 → 50`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-049",
@@ -947,7 +899,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`5 → 10 → 20 → 30 → 40 → NULL`" },
       { id: "D", text: "`5 → 10 → 20 → 25 → 30 → 40 → NULL`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-050",
@@ -960,7 +911,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "3" },
       { id: "D", text: "4" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-051",
@@ -973,7 +923,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`2 7 5 20 15 10`" },
       { id: "D", text: "`10 5 7 2 15 20`" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-052",
@@ -986,7 +935,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`10, 5, 15, 20, 2, 7, 12`" },
       { id: "D", text: "`10, 2, 15, 7, 5, 12, 20`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-053",
@@ -999,7 +947,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`A C F B D E`" },
       { id: "D", text: "`A D B E C F`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-054",
@@ -1012,7 +959,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`A C F B D E`" },
       { id: "D", text: "`A D B E C F`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-055",
@@ -1025,7 +971,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`23→3, 33→4, 43→5, 12→3`" },
       { id: "D", text: "`23→2, 33→3, 43→4, 12→2`" },
     ],
-    correctOptionId: "A",
   },
   {
     id: "Q-056",
@@ -1038,7 +983,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`O(n log n)`" },
       { id: "D", text: "`O(n²)`" },
     ],
-    correctOptionId: "C",
   },
   {
     id: "Q-057",
@@ -1051,7 +995,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "4 and 9" },
       { id: "D", text: "7 and 9" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-058",
@@ -1064,7 +1007,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "Heap" },
       { id: "D", text: "Graph" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-059",
@@ -1077,7 +1019,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "8" },
       { id: "D", text: "13" },
     ],
-    correctOptionId: "B",
   },
   {
     id: "Q-060",
@@ -1090,7 +1031,6 @@ export const MOCK_QUESTIONS: Question[] = [
       { id: "C", text: "`O(n log n)`" },
       { id: "D", text: "`O(2^n)`" },
     ],
-    correctOptionId: "B",
   },
 ];
 

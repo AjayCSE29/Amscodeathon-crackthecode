@@ -5,6 +5,7 @@ interface DebugSubmitModalProps {
   open: boolean;
   edited: number;
   total: number;
+  round: 2 | 3;
   onContinue: () => void;
   onConfirm: () => void;
 }
@@ -13,6 +14,7 @@ export function DebugSubmitModal({
   open,
   edited,
   total,
+  round,
   onContinue,
   onConfirm,
 }: DebugSubmitModalProps) {
@@ -47,12 +49,12 @@ export function DebugSubmitModal({
             id="debug-submit-modal-title"
             className="font-headline-md text-headline-md font-bold text-on-surface"
           >
-            Submit Debug Round?
+            {round === 2 ? "Submit Debug Round?" : "Submit Round 3?"}
           </h3>
         </div>
         <p className="font-body-md text-body-md text-on-surface-variant">
-          You are about to finish Round 2. Your code edits will be recorded and
-          the assessment will be locked for submission.
+          You are about to finish Round {round}. Your code edits will be recorded
+          and the assessment will be locked for submission.
         </p>
         <div className="bg-surface-container-low p-space-sm rounded-lg font-label-sm text-label-sm text-on-surface-variant flex flex-col gap-1">
           <div className="flex justify-between">
@@ -79,7 +81,7 @@ export function DebugSubmitModal({
             onClick={onConfirm}
             className="px-space-md py-2 rounded-lg bg-error hover:bg-on-error-container text-on-error font-label-md text-label-md font-bold transition-colors cursor-pointer"
           >
-            Submit Round 2
+            Submit Round {round}
           </button>
         </div>
       </div>

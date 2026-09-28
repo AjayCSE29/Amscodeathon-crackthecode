@@ -3,6 +3,8 @@ export type AssessmentStatus =
   | "active"
   | "round1-submitted"
   | "round2"
+  | "round2-submitted"
+  | "round3"
   | "submitted";
 
 export type DebugProgramLanguage = "C++" | "Python" | "Java";
@@ -14,6 +16,11 @@ export interface DebugCase {
   output: string;
 }
 
+export interface DebugDriver {
+  before?: string[];
+  after?: string[];
+}
+
 export interface DebugQuestion {
   id: string;
   index: number;
@@ -23,11 +30,35 @@ export interface DebugQuestion {
   starters: Record<DebugProgramLanguage, string[]>;
   sampleCases: Record<DebugProgramLanguage, DebugCase[]>;
   bugHints: Record<DebugProgramLanguage, string>;
+  driver?: Record<DebugProgramLanguage, DebugDriver>;
+}
+
+export interface DebugSampleResult {
+  input: string;
+  stdout: string;
+  stderr: string;
+  exitCode: number | null;
+}
+
+export interface DebugSubmission {
+  questionId: string;
+  questionIndex: number;
+  language: DebugProgramLanguage;
+  code: string;
+  samples: DebugSampleResult[];
+}
+
+export interface SubmissionSnapshot {
+  sessionId: string;
+  teamName: string;
+  submittedAt: string;
+  submissions: DebugSubmission[];
 }
 
 export interface Candidate {
   teamName: string;
-  password: string;
+  userId: string;
+  token: string;
 }
 
 export type CodeTokenType =
@@ -69,8 +100,6 @@ export interface Question {
   question: string;
   options: QuestionOption[];
   code?: CodeSnippet;
-  /** Reserved for future backend integration. NEVER rendered in the participant UI. */
-  correctOptionId?: OptionId;
 }
 
 export interface AssessmentSession {
@@ -84,9 +113,15 @@ export interface AssessmentSession {
   reviewFlags: Record<string, boolean>;
   visited: Record<string, boolean>;
   submittedAt: number | null;
+  round1FinishSeconds: number | null;
+  round1Synced: boolean;
   round2ExpiresAt: number | null;
+  round2FinishSeconds: number | null;
+  round3ExpiresAt: number | null;
+  round3FinishSeconds: number | null;
   currentDebug: number;
   codeEdits: Record<string, string>;
+  debugSubmissions: Record<string, DebugSubmission>;
   debugLanguage: DebugProgramLanguage;
   hintReveals: Record<string, boolean>;
 }

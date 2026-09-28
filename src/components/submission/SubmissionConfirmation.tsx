@@ -5,7 +5,7 @@ import type { AssessmentSession } from "../../types/assessment";
 interface SubmissionConfirmationProps {
   session: AssessmentSession;
   totalQuestions: number;
-  stage: "round1" | "final";
+  stage: "round1" | "round2" | "final";
   onProceed?: () => void;
 }
 
@@ -51,12 +51,16 @@ export function SubmissionConfirmation({
                 <h1 className="font-headline-lg text-headline-lg text-on-surface">
                   {stage === "round1"
                     ? "Round 1 Submitted Successfully"
-                    : "Assessment Submitted Successfully"}
+                    : stage === "round2"
+                      ? "Round 2 Submitted Successfully"
+                      : "Assessment Submitted Successfully"}
                 </h1>
                 <p className="font-body-md text-body-md text-on-surface-variant max-w-xs">
                   {stage === "round1"
                     ? "Your Round 1 responses have been recorded. Proceed to Round 2."
-                    : "Your responses have been recorded."}
+                    : stage === "round2"
+                      ? "Your Round 2 solutions have been recorded. Proceed to Round 3."
+                      : "Your responses have been recorded."}
                 </p>
               </div>
 
@@ -106,7 +110,7 @@ export function SubmissionConfirmation({
                     onClick={onProceed}
                     className="w-full h-10 bg-tertiary hover:bg-primary text-on-tertiary font-label-md text-label-md rounded-lg shadow-sm flex items-center justify-center gap-space-xs transition-colors cursor-pointer"
                   >
-                    <span>Start Round 2</span>
+                    <span>Start {stage === "round1" ? "Round 2" : "Round 3"}</span>
                     <Icon name="arrow_forward" className="text-base" />
                   </button>
                 ) : null}
