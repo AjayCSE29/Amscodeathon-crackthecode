@@ -25,8 +25,7 @@ export function scoreRound1(rawAnswers) {
   }
 
   const qAttended = chosen.size;
-  const score = Math.round((qCorrect / ROUND1_QUESTION_COUNT) * 100 * 100) / 100;
-  return { qAttended, qCorrect, score };
+  return { qAttended, qCorrect, score: qCorrect };
 }
 
 export function clampFinishSeconds(value, maxSeconds) {

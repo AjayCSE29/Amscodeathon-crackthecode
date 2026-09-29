@@ -12,17 +12,27 @@ import {
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.8-flash";
-const GEMINI_TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS ?? 15_000);
-const GEMINI_MAX_CONCURRENCY = Number(process.env.GEMINI_MAX_CONCURRENCY ?? 3);
 const GEMINI_DISABLED = process.env.GEMINI_DISABLE === "1";
+
+const LLM_API_URL = (process.env.LLM_API_URL ?? "").replace(/\/+$/, "");
+const LLM_MODEL = process.env.LLM_MODEL ?? "";
+const LLM_API_KEY = process.env.LLM_API_KEY ?? "";
+const LLM_DISABLED = process.env.LLM_DISABLE === "1";
+const LLM_TIMEOUT_MS = Number(
+  process.env.LLM_TIMEOUT_MS ?? process.env.GEMINI_TIMEOUT_MS ?? 15_000,
+);
+const LLM_MAX_CONCURRENCY = Number(
+  process.env.LLM_MAX_CONCURRENCY ?? process.env.GEMINI_MAX_CONCURRENCY ?? 3,
+);
+const LLM_QUOTA_BACKOFF_MS = Math.max(
+  1_000,
+  Number(process.env.LLM_QUOTA_BACKOFF_MS ?? process.env.GEMINI_QUOTA_BACKOFF_MS ?? 60_000),
+);
+
 const ROUND1_QUESTION_COUNT = 60;
 const GEMINI_MAX_ATTEMPTS = 5;
 const GEMINI_RETRY_ATTEMPTS = 5;
 const GEMINI_RETRY_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
-const GEMINI_QUOTA_BACKOFF_CAP_MS = Math.max(
-  1_000,
-  Number(process.env.GEMINI_QUOTA_BACKOFF_MS ?? 60_000),
-);
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -41,12 +51,25 @@ async function waitForQuotaGate() {
 }
 
 function pushQuotaGate(attempt) {
-  const backoffMs = Math.min(10_000 * 2 ** attempt, GEMINI_QUOTA_BACKOFF_CAP_MS);
+  const backoffMs = Math.min(10_000 * 2 ** attempt, LLM_QUOTA_BACKOFF_MS);
   quotaGateUntil = Math.max(quotaGateUntil, Date.now() + backoffMs);
 }
 
 export function geminiEnabled() {
+  if (LLM_DISABLED) return false;
+  if (LLM_API_URL && LLM_MODEL) return true;
   return !GEMINI_DISABLED && GEMINI_API_KEY.length > 0;
+}
+
+export function llmInfo() {
+  if (LLM_DISABLED) return { provider: null, model: null, enabled: false };
+  if (LLM_API_URL && LLM_MODEL) {
+    return { provider: "qwen", model: LLM_MODEL, enabled: true };
+  }
+  if (!GEMINI_DISABLED && GEMINI_API_KEY.length > 0) {
+    return { provider: "gemini", model: GEMINI_MODEL, enabled: true };
+  }
+  return { provider: null, model: null, enabled: false };
 }
 
 function parseJsonObject(text) {
@@ -78,6 +101,10 @@ function parseJsonObject(text) {
 }
 
 async function generateContent(system, user) {
+  const useLlm = Boolean(LLM_API_URL && LLM_MODEL) && !LLM_DISABLED;
+  const useGemini =
+    !useLlm && GEMINI_API_KEY.length > 0 && !GEMINI_DISABLED && !LLM_DISABLED;
+  const label = useGemini ? "Gemini" : "LLM";
   let lastError = null;
   for (let attempt = 0; attempt < GEMINI_RETRY_ATTEMPTS; attempt++) {
     if (attempt > 0) {
@@ -86,30 +113,51 @@ async function generateContent(system, user) {
     }
     await waitForQuotaGate();
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+    const timer = setTimeout(() => controller.abort(), LLM_TIMEOUT_MS);
     let response;
     try {
-      response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
-        {
+      if (useLlm) {
+        response = await fetch(`${LLM_API_URL}/chat/completions`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-goog-api-key": GEMINI_API_KEY,
+            ...(LLM_API_KEY ? { Authorization: `Bearer ${LLM_API_KEY}` } : {}),
           },
           body: JSON.stringify({
-            system_instruction: { parts: [{ text: system }] },
-            contents: [{ role: "user", parts: [{ text: user }] }],
-            generationConfig: { temperature: 0, responseMimeType: "application/json" },
+            model: LLM_MODEL,
+            messages: [
+              { role: "system", content: system },
+              { role: "user", content: user },
+            ],
+            temperature: 0,
+            response_format: { type: "json_object" },
+            enable_thinking: false,
           }),
           signal: controller.signal,
-        },
-      );
+        });
+      } else {
+        response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": GEMINI_API_KEY,
+            },
+            body: JSON.stringify({
+              system_instruction: { parts: [{ text: system }] },
+              contents: [{ role: "user", parts: [{ text: user }] }],
+              generationConfig: { temperature: 0, responseMimeType: "application/json" },
+            }),
+            signal: controller.signal,
+          },
+        );
+      }
     } catch (err) {
       lastError = geminiError(
         controller.signal.aborted
-          ? `Gemini timed out after ${GEMINI_TIMEOUT_MS}ms.`
-          : `Gemini unreachable: ${err instanceof Error ? err.message : err}`,
+          ? `${label} timed out after ${LLM_TIMEOUT_MS}ms.`
+          : `${label} unreachable: ${err instanceof Error ? err.message : err}`,
       );
       clearTimeout(timer);
       continue;
@@ -119,7 +167,7 @@ async function generateContent(system, user) {
     if (!response.ok) {
       const body = await response.text().catch(() => "");
       lastError = geminiError(
-        `Gemini returned HTTP ${response.status} ${body.slice(0, 240)}`,
+        `${label} returned HTTP ${response.status} ${body.slice(0, 240)}`,
         response.status,
       );
       if (lastError.retryable) {
@@ -132,19 +180,21 @@ async function generateContent(system, user) {
     try {
       data = await response.json();
     } catch {
-      throw geminiError("Gemini returned an invalid response.");
+      throw geminiError(`${label} returned an invalid response.`);
     }
-    const text = data?.candidates?.[0]?.content?.parts
-      ?.map((part) => (typeof part.text === "string" ? part.text : ""))
-      .join("");
+    const text = useLlm
+      ? data?.choices?.[0]?.message?.content
+      : data?.candidates?.[0]?.content?.parts
+          ?.map((part) => (typeof part.text === "string" ? part.text : ""))
+          .join("");
     const verdict = parseJsonObject(text);
     if (verdict === null) {
-      lastError = geminiError("Gemini verdict was not JSON.");
+      lastError = geminiError(`${label} verdict was not JSON.`);
       continue;
     }
     return verdict;
   }
-  throw lastError ?? geminiError("Gemini failed after exhaustion.");
+  throw lastError ?? geminiError("LLM failed after exhaustion.");
 }
 
 export function round1KeyRows() {
@@ -179,7 +229,7 @@ function buildRound1Prompt(answers) {
 }
 
 export async function evaluateRound1(answers) {
-  if (!geminiEnabled()) throw new Error("Gemini evaluation is not enabled.");
+  if (!geminiEnabled()) throw new Error("LLM evaluation is not enabled.");
   const { system, user } = buildRound1Prompt(answers);
   const verdict = await generateContent(system, user);
   const attended = Number(verdict?.attended);
@@ -190,7 +240,7 @@ export async function evaluateRound1(answers) {
     !Number.isInteger(correct) ||
     !Number.isFinite(score)
   ) {
-    throw new Error("Gemini Round 1 verdict was not parseable.");
+    throw new Error("LLM Round 1 verdict was not parseable.");
   }
   const qAttended = Math.max(0, Math.min(ROUND1_QUESTION_COUNT, attended));
   const qCorrect = Math.max(0, Math.min(qAttended, correct));
@@ -240,11 +290,11 @@ function buildRound2Prompt(row) {
 }
 
 export async function evaluateRound2(row) {
-  if (!geminiEnabled()) throw new Error("Gemini evaluation is not enabled.");
+  if (!geminiEnabled()) throw new Error("LLM evaluation is not enabled.");
   const { system, user } = buildRound2Prompt(row);
   const verdict = await generateContent(system, user);
   if (typeof verdict?.is_right !== "boolean") {
-    throw new Error("Gemini Round 2 verdict was not parseable.");
+    throw new Error("LLM Round 2 verdict was not parseable.");
   }
   return {
     isRight: verdict.is_right,
@@ -273,10 +323,10 @@ async function runRound2Job(job) {
     const attempts = (round2Attempts.get(key) ?? 0) + 1;
     round2Attempts.set(key, attempts);
     if (attempts >= GEMINI_MAX_ATTEMPTS) {
-      console.warn(`Gemini Round 2 gave up on ${key} after ${attempts} attempts.`);
+      console.warn(`LLM Round 2 gave up on ${key} after ${attempts} attempts.`);
     } else {
       console.warn(
-        `Gemini Round 2 failed for ${key}: ${err instanceof Error ? err.message : err}`,
+        `LLM Round 2 failed for ${key}: ${err instanceof Error ? err.message : err}`,
       );
     }
   } finally {
@@ -288,7 +338,7 @@ async function runRound2Job(job) {
 
 function pumpRound2() {
   if (!geminiEnabled()) return;
-  while (round2Workers < GEMINI_MAX_CONCURRENCY && round2Queue.length > 0) {
+  while (round2Workers < LLM_MAX_CONCURRENCY && round2Queue.length > 0) {
     const job = round2Queue.shift();
     void runRound2Job(job);
   }
@@ -325,7 +375,7 @@ export function startRound2Sweeper(intervalMs = 30_000) {
 }
 
 export async function evaluateRound2Single(userId, qNo) {
-  if (!geminiEnabled()) return { ok: false, reason: "Gemini evaluation is not enabled." };
+  if (!geminiEnabled()) return { ok: false, reason: "LLM evaluation is not enabled." };
   const row = await getRound2Submission(userId, qNo);
   if (!row) return { ok: false, reason: "Submission not found." };
   const verdict = await evaluateRound2(row);
@@ -360,7 +410,7 @@ export async function evaluateBatchRound2() {
       }
     }
   }
-  const workers = Math.max(1, Math.min(GEMINI_MAX_CONCURRENCY, pending.length));
+  const workers = Math.max(1, Math.min(LLM_MAX_CONCURRENCY, pending.length));
   await Promise.all(Array.from({ length: workers }, () => worker()));
   return { evaluated, failed, pending: pending.length };
 }
@@ -404,11 +454,11 @@ function buildRound3Prompt(row) {
 }
 
 export async function evaluateRound3(row) {
-  if (!geminiEnabled()) throw new Error("Gemini evaluation is not enabled.");
+  if (!geminiEnabled()) throw new Error("LLM evaluation is not enabled.");
   const { system, user } = buildRound3Prompt(row);
   const verdict = await generateContent(system, user);
   if (typeof verdict?.is_right !== "boolean") {
-    throw new Error("Gemini Round 3 verdict was not parseable.");
+    throw new Error("LLM Round 3 verdict was not parseable.");
   }
   return {
     isRight: verdict.is_right,
@@ -437,10 +487,10 @@ async function runRound3Job(job) {
     const attempts = (round3Attempts.get(key) ?? 0) + 1;
     round3Attempts.set(key, attempts);
     if (attempts >= GEMINI_MAX_ATTEMPTS) {
-      console.warn(`Gemini Round 3 gave up on ${key} after ${attempts} attempts.`);
+      console.warn(`LLM Round 3 gave up on ${key} after ${attempts} attempts.`);
     } else {
       console.warn(
-        `Gemini Round 3 failed for ${key}: ${err instanceof Error ? err.message : err}`,
+        `LLM Round 3 failed for ${key}: ${err instanceof Error ? err.message : err}`,
       );
     }
   } finally {
@@ -452,7 +502,7 @@ async function runRound3Job(job) {
 
 function pumpRound3() {
   if (!geminiEnabled()) return;
-  while (round3Workers < GEMINI_MAX_CONCURRENCY && round3Queue.length > 0) {
+  while (round3Workers < LLM_MAX_CONCURRENCY && round3Queue.length > 0) {
     const job = round3Queue.shift();
     void runRound3Job(job);
   }
@@ -489,7 +539,7 @@ export function startRound3Sweeper(intervalMs = 30_000) {
 }
 
 export async function evaluateRound3Single(userId, qNo) {
-  if (!geminiEnabled()) return { ok: false, reason: "Gemini evaluation is not enabled." };
+  if (!geminiEnabled()) return { ok: false, reason: "LLM evaluation is not enabled." };
   const row = await getRound3Submission(userId, qNo);
   if (!row) return { ok: false, reason: "Submission not found." };
   const verdict = await evaluateRound3(row);
@@ -524,7 +574,7 @@ export async function evaluateBatchRound3() {
       }
     }
   }
-  const workers = Math.max(1, Math.min(GEMINI_MAX_CONCURRENCY, pending.length));
+  const workers = Math.max(1, Math.min(LLM_MAX_CONCURRENCY, pending.length));
   await Promise.all(Array.from({ length: workers }, () => worker()));
   return { evaluated, failed, pending: pending.length };
 }

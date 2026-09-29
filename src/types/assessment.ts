@@ -112,6 +112,8 @@ export interface AssessmentSession {
   responses: Record<string, OptionId | null>;
   reviewFlags: Record<string, boolean>;
   visited: Record<string, boolean>;
+  round1Order: number[];
+  round2Order: number[];
   submittedAt: number | null;
   round1FinishSeconds: number | null;
   round1Synced: boolean;

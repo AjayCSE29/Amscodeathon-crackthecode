@@ -36,11 +36,18 @@ Development and production servers read these from the environment:
   them with `VITE_`, or Vite will inline them into the client bundle.
   `AUTH_TOKEN_SECRET` optionally overrides the signing key used for the session
   token; it defaults to a SHA-256 derivation from the service-role key.
-- Gemini grading (Round 1 auto-verdict, Round 2 judge) is server-only:
-  `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.8-flash`),
-  `GEMINI_TIMEOUT_MS` (15 s), `GEMINI_MAX_CONCURRENCY` (3),
-  `GEMINI_QUOTA_BACKOFF_MS` (60 s, cap on the retry backoff), and `GEMINI_DISABLE`
-  (set to `1` to fall back to deterministic Round 1 scoring). Never `VITE_`.
+- LLM grading (Round 2/3 judge, Round 1 cross-check audit) is server-only and
+  provider-agnostic. An OpenAI-compatible endpoint takes precedence:
+  `LLM_API_URL`, `LLM_MODEL`, `LLM_API_KEY`, `LLM_TIMEOUT_MS` (15 s),
+  `LLM_MAX_CONCURRENCY` (3), `LLM_QUOTA_BACKOFF_MS` (60 s, cap on the retry
+  backoff), and `LLM_DISABLE` (set to `1` to fall back to deterministic Round 1
+  scoring). It calls `{LLM_API_URL}/chat/completions` with `temperature: 0`,
+  `response_format: {type: "json_object"}`, and `enable_thinking: false`, and
+  reads `choices[0].message.content`. When `LLM_API_URL` is unset, the Gemini
+  path is used: `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.8-flash`),
+  `GEMINI_TIMEOUT_MS`, `GEMINI_MAX_CONCURRENCY`, `GEMINI_QUOTA_BACKOFF_MS`, and
+  `GEMINI_DISABLE` (set to `1` to disable only the Gemini fallback). None of
+  these may be prefixed `VITE_`.
   Calls that return `408/429/5xx` retry with exponential backoff (global
   quota-gate) up to 5 attempts; exhausted retryable calls record
   `retry-later`, hard failures record `failed`.
@@ -107,11 +114,11 @@ These are product requirements, not preferences:
 | Persistence          | `src/lib/storage.ts` (the only `localStorage` access) |
 | Code execution client| `src/lib/runClient.ts` → `POST /api/run`        |
 | Backend server       | `server/index.mjs` (proxy, auth, sync, admin, Gemini wiring) |
-| Gemini grading       | `server/evaluate.mjs` (Round 1 auto-verdict, Round 2 judge, queue + sweeper) |
+| LLM grading          | `server/evaluate.mjs` (Round 2/3 judge, Round 1 cross-check audit, queue + sweeper; OpenAI-compatible transport with Gemini fallback) |
 | Login / result sync client | `src/lib/syncClient.ts` → `/api/auth/login`, `/api/sync`, `/api/sync/round1`, `/api/round2/confirm` |
 | Auth + password hashing | `server/auth.mjs` (scrypt, `node:crypto`; participant + admin tokens) |
 | Round 1 answer key   | `server/answerKey.mjs` (60-char string, server-only) |
-| Scoring              | `server/scoring.mjs` (deterministic fallback; never returns a score to the client) |
+| Scoring              | `server/scoring.mjs` (Round 1 key-based scoring, 1 mark per correct, authoritative; never returns a score to the client) |
 | Database client      | `server/supabase.mjs` (REST via `fetch`, service role) |
 | Database schema      | `supabase/001_schema.sql`, `002_grants.sql`, `003_verify.sql`, `004_admin_users.sql` |
 | Roster CSV template  | `supabase/seed.example.csv` + `server/hash-password.mjs` |
@@ -286,8 +293,8 @@ After changes, manually confirm:
   question id so Round 2 (`q2-*`) and Round 3 (`r3-*`) drafts never collide.
 - The default Gemini model is `gemini-3.8-flash`; the retired `gemini-2.5-*`
   snapshots return HTTP 404 for new (`AQ.A`-prefix) keys. Change
-  `GEMINI_MODEL`, choose `GEMINI_DISABLE=1`, or rely on the deterministic
-  fallback rather than pinning an old snapshot.
+  `GEMINI_MODEL`, set `LLM_API_URL` to point at a different provider, or rely
+  on the deterministic fallback rather than pinning an old snapshot.
 - The sync bucket (`SYNC_RATE_LIMIT_PER_MIN`, 6/min) is shared by
   `/api/sync`, `/api/sync/round1`, and the Round 1 branch of the final sync, so
   back-to-back curl tests against the same IP can legitimately get `429

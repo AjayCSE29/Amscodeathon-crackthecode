@@ -101,6 +101,10 @@ export function isSessionLike(value: unknown): value is AssessmentSession {
   );
 }
 
+function identityOrder(length: number): number[] {
+  return Array.from({ length }, (_, i) => i);
+}
+
 function withDefaults(value: AssessmentSession): AssessmentSession {
   const rawEdits = value.codeEdits ?? {};
   const codeEdits: Record<string, string> = {};
@@ -109,6 +113,8 @@ function withDefaults(value: AssessmentSession): AssessmentSession {
   }
   return {
     ...value,
+    round1Order: Array.isArray(value.round1Order) ? value.round1Order : identityOrder(60),
+    round2Order: Array.isArray(value.round2Order) ? value.round2Order : identityOrder(13),
     round1FinishSeconds: value.round1FinishSeconds ?? null,
     round1Synced: value.round1Synced ?? false,
     round2ExpiresAt: value.round2ExpiresAt ?? null,

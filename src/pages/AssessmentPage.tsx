@@ -7,7 +7,7 @@ import { QuestionNavigator } from "../components/assessment/QuestionNavigator";
 import { SubmitModal } from "../components/assessment/SubmitModal";
 import { AssessmentLayout } from "../components/layout/AssessmentLayout";
 import { AppHeader } from "../components/layout/AppHeader";
-import { MOCK_QUESTIONS, ASSESSMENT_DURATION_MS } from "../data/mockQuestions";
+import { ASSESSMENT_DURATION_MS } from "../data/mockQuestions";
 import { useAssessmentTimer } from "../hooks/useAssessmentTimer";
 import { formatHMS } from "../lib/utils";
 import type { UseAssessmentApi } from "../hooks/useAssessment";
@@ -20,6 +20,7 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
   const {
     session,
     currentQuestion,
+    questionList,
     totalQuestions,
     counts,
     stateFor,
@@ -179,9 +180,10 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
 
   const navigator = (
     <QuestionNavigator
+      questions={questionList}
       currentIndex={session.currentQuestion - 1}
       counts={counts}
-      stateFor={(index: number) => stateFor(MOCK_QUESTIONS[index])}
+      stateFor={(index: number) => stateFor(questionList[index])}
       onNavigate={onNavigateFromPalette}
       onSubmit={() => setSubmitOpen(true)}
     />
@@ -207,7 +209,7 @@ export function AssessmentPage({ api }: AssessmentPageProps) {
 
             <main className="lg:col-span-6 flex flex-col gap-space-md">
               <QuestionMetadata
-                index={currentQuestion.index}
+                index={session.currentQuestion}
                 total={totalQuestions}
                 answered={answeredCurrent}
               />

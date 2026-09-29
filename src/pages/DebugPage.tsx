@@ -201,7 +201,7 @@ export function DebugPage({ api, questions, roundLabel, submitRound }: DebugPage
     });
     cancelPendingRun();
     setView("editor");
-    navigateDebug(Math.min(questions.length, question.index + 1));
+    navigateDebug(Math.min(questions.length, questions.indexOf(question) + 1));
   }, [
     currentDebugQuestion,
     language,
@@ -209,7 +209,7 @@ export function DebugPage({ api, questions, roundLabel, submitRound }: DebugPage
     confirmDebugOutput,
     cancelPendingRun,
     navigateDebug,
-    questions.length,
+    questions,
   ]);
 
   useEffect(() => {
@@ -304,7 +304,7 @@ export function DebugPage({ api, questions, roundLabel, submitRound }: DebugPage
           <main className="lg:col-span-8 flex flex-col gap-space-md lg:h-[calc(100vh-7rem)] lg:min-h-[620px] min-h-0">
             <DebugControls
               questions={questions}
-              currentIndex={question.index - 1}
+              currentIndex={session.currentDebug - 1}
               editedIds={editedIds}
               confirmedIds={confirmedIds}
               onNavigate={handleNavigate}

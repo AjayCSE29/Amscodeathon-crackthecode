@@ -49,6 +49,8 @@ export interface UseAssessmentApi {
   totalQuestions: number;
   counts: AssessmentCounts;
   debugCounts: { edited: number; total: number };
+  questionList: Question[];
+  debugQuestionList: DebugQuestion[];
   stateFor: (question: Question) => QuestionState;
   restoreProblem: boolean;
   startAssessment: (candidate: Candidate) => void;
@@ -79,10 +81,33 @@ function isDebugStatus(status: AssessmentStatus | undefined): boolean {
   return status === "round2" || status === "round3";
 }
 
-function questionsFor(status: AssessmentStatus | undefined): DebugQuestion[] {
+function shuffleIndices(length: number): number[] {
+  const indices = Array.from({ length }, (_, i) => i);
+  for (let i = indices.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return indices;
+}
+
+function questionsFor(
+  status: AssessmentStatus | undefined,
+  session: AssessmentSession | null,
+): DebugQuestion[] {
   if (status === "round3") return ROUND3_QUESTIONS;
-  if (status === "round2") return DEBUG_QUESTIONS;
+  if (status === "round2") {
+    const order = session?.round2Order ?? null;
+    if (!order || order.length !== DEBUG_QUESTIONS.length) return DEBUG_QUESTIONS;
+    return order.map((i) => DEBUG_QUESTIONS[i]);
+  }
   return [];
+}
+
+function orderedRound1(session: AssessmentSession | null): Question[] {
+  if (!session || session.round1Order.length !== MOCK_QUESTIONS.length) {
+    return MOCK_QUESTIONS;
+  }
+  return session.round1Order.map((i) => MOCK_QUESTIONS[i]);
 }
 
 function buildSession(candidate: Candidate): AssessmentSession {
@@ -97,6 +122,8 @@ function buildSession(candidate: Candidate): AssessmentSession {
     responses: {},
     reviewFlags: {},
     visited: {},
+    round1Order: shuffleIndices(TOTAL_QUESTIONS),
+    round2Order: shuffleIndices(TOTAL_DEBUG_QUESTIONS),
     submittedAt: null,
     round1FinishSeconds: null,
     round1Synced: false,
@@ -305,7 +332,7 @@ export function useAssessment(): UseAssessmentApi {
   const setCurrentIndex = useCallback(
     (sessionState: AssessmentSession, index: number) => {
       const idx = Math.min(TOTAL_QUESTIONS, Math.max(1, index));
-      const target = MOCK_QUESTIONS[idx - 1];
+      const target = orderedRound1(sessionState)[idx - 1];
       const visited: Record<string, boolean> =
         idx === sessionState.currentQuestion
           ? sessionState.visited
@@ -606,15 +633,19 @@ export function useAssessment(): UseAssessmentApi {
   }, []);
 
   const currentQuestion: Question | null = session
-    ? MOCK_QUESTIONS[session.currentQuestion - 1] ?? null
+    ? orderedRound1(session)[session.currentQuestion - 1] ?? null
     : null;
 
   const currentDebugQuestion: DebugQuestion | null =
     session && isDebugStatus(session.status)
-      ? questionsFor(session.status)[session.currentDebug - 1] ?? null
+      ? questionsFor(session.status, session)[session.currentDebug - 1] ?? null
       : null;
 
-  const activeQuestions = questionsFor(session?.status);
+  const activeQuestions = questionsFor(session?.status, session);
+  const questionList = session ? orderedRound1(session) : MOCK_QUESTIONS;
+  const debugQuestionList = isDebugStatus(session?.status)
+    ? questionsFor(session?.status, session)
+    : [];
   const activeQuestionIds = new Set(activeQuestions.map((q) => q.id));
   const currentRoundActive = isDebugStatus(session?.status);
 
@@ -656,6 +687,8 @@ export function useAssessment(): UseAssessmentApi {
     currentQuestion,
     currentDebugQuestion,
     totalQuestions: TOTAL_QUESTIONS,
+    questionList,
+    debugQuestionList,
     counts,
     debugCounts,
     stateFor,

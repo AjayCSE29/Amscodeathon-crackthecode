@@ -79,8 +79,9 @@ export function Round1Tab({
       </div>
 
       <p className="font-body-md text-body-md text-on-surface-variant">
-        Scores shown are the authoritative result. The Gemini column is an
-        independent cross-check for audit; flag any team where the two differ.
+        Round 1 score is the number of correct answers, one mark each (max 60),
+        computed from the answer key. The Gemini column is an independent
+        cross-check for audit; flag any team where the two differ.
       </p>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 overflow-hidden">
@@ -112,7 +113,7 @@ export function Round1Tab({
                   <td className="px-4 py-2">{team.q_attended}</td>
                   <td className="px-4 py-2">{team.q_correct}</td>
                   <td className="px-4 py-2 font-mono font-code-body text-code-body font-semibold">
-                    {team.score.toFixed(2)}
+                    {Math.round(team.score)}
                   </td>
                   <td className="px-4 py-2 font-mono font-code-body text-code-body text-on-surface-variant">
                     {Math.floor(team.finish_seconds / 60)}m {team.finish_seconds % 60}s
@@ -143,7 +144,8 @@ export function Round1Tab({
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap gap-6 font-body-md text-body-md text-on-surface">
               <span>
-                Score <span className="font-semibold font-mono">{selected.score.toFixed(2)}</span>
+                Score{" "}
+                <span className="font-semibold font-mono">{Math.round(selected.score)}</span>
               </span>
               <span>
                 Attended <span className="font-semibold">{selected.q_attended}/60</span>

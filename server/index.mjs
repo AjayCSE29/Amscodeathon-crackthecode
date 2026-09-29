@@ -23,6 +23,7 @@ import {
   evaluateRound2Single,
   evaluateRound3Single,
   geminiEnabled,
+  llmInfo,
   startRound2Sweeper,
   startRound3Sweeper,
 } from "./evaluate.mjs";
@@ -496,14 +497,14 @@ async function ingestRound1(userId, answersRaw, finishSecondsRaw) {
       status = "ok";
     } catch (err) {
       console.warn(
-        `Round 1 Gemini failed for ${userId}: ${err instanceof Error ? err.message : err}`,
+        `Round 1 LLM failed for ${userId}: ${err instanceof Error ? err.message : err}`,
       );
       status = err && err.retryable === true ? "retry-later" : "failed";
     }
   } else {
     status = "gemini-disabled";
   }
-  const chosen = geminiVerdict ?? det;
+  const chosen = det;
   await upsertRound1Result({
     user_id: userId,
     q_attended: chosen.qAttended,
@@ -1318,6 +1319,7 @@ const server = createServer(async (req, res) => {
       supabase: isConfigured(),
       admin: adminConfigured(),
       gemini: geminiEnabled(),
+      llm: llmInfo(),
     });
     return;
   }

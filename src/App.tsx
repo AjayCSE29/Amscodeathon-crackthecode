@@ -12,8 +12,6 @@ import {
   useFullscreenGuard,
 } from "./hooks/useFullscreenGuard";
 import { requestFullscreen } from "./lib/fullscreen";
-import { DEBUG_QUESTIONS } from "./data/debugQuestions";
-import { ROUND3_QUESTIONS } from "./data/round3Questions";
 import { AssessmentPage } from "./pages/AssessmentPage";
 import { DebugPage } from "./pages/DebugPage";
 import { EntryPage } from "./pages/EntryPage";
@@ -161,7 +159,7 @@ export default function App() {
         ) : null}
         <DebugPage
           api={api}
-          questions={DEBUG_QUESTIONS}
+          questions={api.debugQuestionList}
           roundLabel="Round 02"
           submitRound={2}
         />
@@ -177,7 +175,7 @@ export default function App() {
         ) : null}
         <DebugPage
           api={api}
-          questions={ROUND3_QUESTIONS}
+          questions={api.debugQuestionList}
           roundLabel="Round 03"
           submitRound={3}
         />

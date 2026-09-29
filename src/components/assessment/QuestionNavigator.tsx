@@ -1,10 +1,10 @@
-import { MOCK_QUESTIONS } from "../../data/mockQuestions";
 import { cn } from "../../lib/utils";
 import type { AssessmentCounts } from "../../hooks/useAssessment";
-import type { QuestionState } from "../../types/assessment";
+import type { Question, QuestionState } from "../../types/assessment";
 import { Icon } from "../ui/Icon";
 
 interface QuestionNavigatorProps {
+  questions: Question[];
   currentIndex: number;
   counts: AssessmentCounts;
   stateFor: (index: number) => QuestionState;
@@ -13,6 +13,7 @@ interface QuestionNavigatorProps {
 }
 
 export function QuestionNavigator({
+  questions,
   currentIndex,
   counts,
   stateFor,
@@ -29,7 +30,7 @@ export function QuestionNavigator({
           </h3>
         </div>
         <span className="font-label-sm text-label-sm bg-surface-container text-on-surface font-bold px-2 py-0.5 rounded">
-          {MOCK_QUESTIONS.length} Total
+          {questions.length} Total
         </span>
       </div>
 
@@ -53,7 +54,7 @@ export function QuestionNavigator({
       </div>
 
       <div className="grid grid-cols-5 gap-2">
-        {MOCK_QUESTIONS.map((q, i) => {
+        {questions.map((q, i) => {
           const st = stateFor(i);
           const isCurrent = i === currentIndex;
           const answered = st.selectedOption != null;
@@ -101,7 +102,7 @@ export function QuestionNavigator({
           <span className="">
             Total Answered:{" "}
             <strong className="text-on-surface font-bold">
-              {counts.answered} / {MOCK_QUESTIONS.length}
+              {counts.answered} / {questions.length}
             </strong>
           </span>
           <span className="">

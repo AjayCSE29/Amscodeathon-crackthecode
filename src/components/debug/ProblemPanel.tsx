@@ -58,7 +58,7 @@ export function ProblemPanel({
         </div>
       </div>
 
-      <p className="font-body-md text-body-md text-on-surface leading-relaxed">
+      <p className="font-body-md text-body-md text-on-surface leading-relaxed whitespace-pre-line">
         {richText(question.statement)}
       </p>
 
